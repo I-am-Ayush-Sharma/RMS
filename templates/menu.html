@@ -1,0 +1,190 @@
+<style>
+  body {
+    background: #f8fafc;
+    font-family: sans-serif;
+  }
+
+  .item-card {
+    background: #ffffff;
+    border-radius: 12px;
+    padding: 12px;
+    width: 180px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  }
+
+  .category-block h2 {
+    color: #b91c1c;
+  }
+
+  .items {
+    display: flex;
+    gap: 15px;
+    flex-wrap: wrap;
+  }
+
+  #search {
+    outline: none;
+    transition: 0.2s;
+  }
+
+  #search:focus {
+    border-color: #16a34a;
+    box-shadow: 0 0 5px rgba(22, 163, 74, 0.4);
+  }
+
+  .item-card img {
+    border-radius: 8px;
+    margin-bottom: 8px;
+  }
+
+  .item-card img {
+    transition: 0.3s;
+  }
+
+  .item-card img:hover {
+    transform: scale(1.1);
+  }
+
+  .item-card p:first-of-type {
+    font-weight: bold;
+    color: #16a34a;
+  }
+
+  #search,
+  #categoryFilter {
+    margin-right: 10px;
+  }
+</style>
+
+{% if session['role'] == 'admin' %}
+<a href="/add_menu" style="padding:8px 12px; background:#16a34a; color:white; border-radius:6px; text-decoration:none;">
+  ➕ Add Menu Item
+</a>
+{% endif %}
+
+<input type="text" id="search" placeholder="🔍 Search food..."
+  style="padding:8px; width:250px; margin:10px 0; border-radius:6px; border:1px solid #ccc;">
+<label for="catfilter">Filter:</label>
+<select id="categoryFilter" style="padding:8px; margin-left:10px; border-radius:6px;" name="catfilter">
+  <option value="all">All Categories</option>
+  {% for cat in categories %}
+  <option value="{{cat[1]}}">{{cat[1]}}</option>
+  {% endfor %}
+</select>
+<p>Total Items: {{ items|length }}</p>
+
+<!-- <h2>Menu</h2>
+
+{% if session['role'] == 'admin' %}
+<form method="POST" action="/add_menu" enctype="multipart/form-data">
+  Name: <input type="text" name="name" required />
+
+  Category:
+  <select name="category">
+    {% for cat in categories %}
+    <option value="{{cat[0]}}">{{cat[1]}}</option>
+    {% endfor %}
+  </select>
+
+  Price: <input type="number" name="price" required />
+
+  Description:
+  <input type="text" name="description" />
+
+  Image:
+  <input type="file" name="image" />
+
+  <button>Add</button>
+</form>
+{% endif %} -->
+
+<hr />
+
+{% set ns = namespace(current=None) %}
+
+<div class="menu-container">
+
+  {% for item in items %}
+
+  {% if ns.current != item[6] %}
+
+  {% if not loop.first %}
+</div> <!-- close items -->
+</div> <!-- close category -->
+{% endif %}
+
+<div class="category-block">
+  <h2>{{ item[6] }}</h2>
+  <div class="items">
+
+    {% set ns.current = item[6] %}
+    {% endif %}
+
+    <div class="item-card">
+
+      {% if item[4] %}
+      <img src="{{ url_for('static', filename='uploads/' + item[4]) }}" width="150px">
+      {% endif %}
+
+      <h3>{{ item[1] }}</h3>
+      <p>₹{{ item[3] }}</p>
+      {% if item[5] %}
+      <p>{{ item[5] }}</p>
+      {% endif %}
+
+      {% if session['role'] == 'admin' %}
+      <a href="/edit_menu/{{item[0]}}">✏️</a>
+      <a href="/delete_menu/{{item[0]}}" onclick="return confirm('Delete this item?')">❌</a>
+      {% else %}
+      <br>
+      <a href="/add_to_cart/{{item[0]}}"
+        style="background:#16a34a;color:white;padding:5px 10px;border-radius:5px;text-decoration:none;">
+        🛒 Add to Cart
+      </a>
+      {% endif %}
+
+    </div>
+
+    {% endfor %}
+
+  </div>
+</div>
+</div>
+
+
+<br>
+<a href="/logout">Logout</a>
+
+<script>
+  const search = document.getElementById("search");
+  const filter = document.getElementById("categoryFilter");
+
+  function applyFilter() {
+    let searchVal = search.value.toLowerCase();
+    let selectedCat = filter.value;
+
+    document.querySelectorAll(".category-block").forEach(category => {
+      let categoryName = category.querySelector("h2").innerText;
+      let hasVisibleItem = false;
+
+      category.querySelectorAll(".item-card").forEach(card => {
+        let text = card.innerText.toLowerCase();
+
+        let matchesSearch = text.includes(searchVal);
+        let matchesCategory = (selectedCat === "all" || categoryName === selectedCat);
+
+        if (matchesSearch && matchesCategory) {
+          card.style.display = "block";
+          hasVisibleItem = true;
+        } else {
+          card.style.display = "none";
+        }
+      });
+
+      category.style.display = hasVisibleItem ? "block" : "none";
+    });
+  }
+
+  search.addEventListener("keyup", applyFilter);
+  filter.addEventListener("change", applyFilter);
+</script>

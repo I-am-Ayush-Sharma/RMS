@@ -1,0 +1,36 @@
+<h2>User Dashboard 👤</h2>
+
+<div style="margin-top: 20px">
+  <a
+    href="/menu"
+    style="
+      display: inline-block;
+      padding: 10px 15px;
+      background: #2563eb;
+      color: white;
+      border-radius: 6px;
+      text-decoration: none;
+      margin-right: 10px;
+    "
+  >
+    🍽️ View Menu
+  </a>
+
+  <a
+    href="/cart"
+    style="
+      display: inline-block;
+      padding: 10px 15px;
+      background: #16a34a;
+      color: white;
+      border-radius: 6px;
+      text-decoration: none;
+    "
+  >
+    🛒 View Cart ({{ session['cart']|length if session.get('cart') else 0 }})
+  </a>
+  <a href="/orders">📦 Orders</a>
+</div>
+
+<br /><br />
+

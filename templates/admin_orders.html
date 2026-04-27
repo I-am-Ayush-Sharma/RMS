@@ -1,0 +1,30 @@
+<h2>📊 All Orders (Admin)</h2>
+
+{% for order in orders %}
+
+<div style="border:1px solid #ccc; padding:10px; margin-bottom:15px;">
+
+  <h3>Order #{{ order["id"] }}</h3>
+
+  <b>Items:</b>
+  <ul>
+    {% for item in order["items"] %}
+      <li>{{ item["name"] }} x {{ item["quantity"] }}</li>
+    {% endfor %}
+  </ul>
+
+  <p><b>Total:</b> ₹{{ order["total"] }}</p>
+  <p><b>Time:</b> {{ order["time"] }}</p>
+
+  <p>
+    <b>Status:</b>
+    {% if order["status"] == "Ready" %}
+      <span style="color:green;">✔ Ready</span>
+    {% else %}
+      <span style="color:orange;">Preparing</span>
+    {% endif %}
+  </p>
+
+</div>
+
+{% endfor %}

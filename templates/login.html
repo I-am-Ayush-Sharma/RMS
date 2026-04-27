@@ -1,0 +1,189 @@
+<!-- <h2>Login</h2>
+
+<form method="POST">
+    Username: <input type="text" name="username"><br><br>
+    Password: <input type="password" name="password"><br><br>
+    <button>Login</button>
+</form> -->
+
+<style>
+  @import url("https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=DM+Sans:wght@300;400;500&display=swap");
+
+  :root {
+  /* Backgrounds */
+  --color-background-primary: #FFFFFF;
+  --color-background-secondary: #F7F7FB;
+
+  /* Text */
+  --color-text-primary: #2D2D34;
+  --color-text-secondary: #6F6F7B;
+
+  /* Borders */
+  --color-border-secondary: #E4E4EA;
+  --color-border-tertiary: #EFEFF4;
+
+  /* Radius */
+  --border-radius-lg: 16px;
+  --border-radius-md: 10px;
+}
+
+  body {
+    background: #F3F4F8;
+  }
+
+  .login-wrap {
+    min-height: 420px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2.5rem 1rem;
+    font-family: "DM Sans", sans-serif;
+  }
+
+  .login-card {
+    background: var(--color-background-primary);
+    border: 0.5px solid var(--color-border-tertiary);
+    border-radius: var(--border-radius-lg);
+    padding: 2.5rem 2rem 2rem;
+    width: 100%;
+    max-width: 360px;
+  }
+
+  .login-card h2 {
+    font-family: "DM Serif Display", serif;
+    font-size: 26px;
+    font-weight: 400;
+    color: var(--color-text-primary);
+    margin: 0 0 0.25rem;
+    letter-spacing: -0.3px;
+  }
+
+  .login-subtitle {
+    font-size: 13px;
+    color: var(--color-text-secondary);
+    margin: 0 0 2rem;
+  }
+
+  .field {
+    margin-bottom: 1.1rem;
+  }
+
+  .field label {
+    display: block;
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--color-text-secondary);
+    margin-bottom: 6px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+
+  .field input {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 10px 14px;
+    font-size: 14px;
+    font-family: "DM Sans", sans-serif;
+    background: var(--color-background-secondary);
+    border: 0.5px solid var(--color-border-secondary);
+    border-radius: var(--border-radius-md);
+    color: var(--color-text-primary);
+    transition:
+      border-color 0.15s,
+      box-shadow 0.15s;
+    outline: none;
+  }
+
+  .field input:focus {
+    border-color: #7f77dd;
+    box-shadow: 0 0 0 3px rgba(127, 119, 221, 0.12);
+  }
+
+  .login-btn {
+    margin-top: 1.5rem;
+    width: 100%;
+    padding: 11px 0;
+    font-family: "DM Sans", sans-serif;
+    font-size: 14px;
+    font-weight: 500;
+    letter-spacing: 0.02em;
+    background: #534ab7;
+    color: #eeedfe;
+    border: none;
+    border-radius: var(--border-radius-md);
+    cursor: pointer;
+    transition:
+      background 0.15s,
+      transform 0.1s;
+  }
+
+  .login-btn:hover {
+    background: #3c3489;
+  }
+  .login-btn:active {
+    transform: scale(0.98);
+    background: #26215c;
+  }
+
+  .divider {
+    height: 0.5px;
+    background: var(--color-border-tertiary);
+    margin: 1.75rem 0 1.25rem;
+  }
+
+  .login-footer {
+    font-size: 12px;
+    color: var(--color-text-secondary);
+    text-align: center;
+  }
+
+  .accent-dot {
+    display: inline-block;
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: #7f77dd;
+    margin-right: 6px;
+    vertical-align: middle;
+    position: relative;
+    top: -1px;
+  }
+</style>
+
+<div class="login-wrap">
+  <div class="login-card">
+    <h2>Login</h2>
+    <p class="login-subtitle">
+      <span class="accent-dot"></span>Welcome back — sign in to continue
+    </p>
+
+    <form method="POST">
+      <div class="field">
+        <label for="username">Username</label>
+        <input
+          type="text"
+          name="username"
+          id="username"
+          placeholder="your username"
+          autocomplete="username"
+        />
+      </div>
+      <div class="field">
+        <label for="password">Password</label>
+        <input
+          type="password"
+          name="password"
+          id="password"
+          placeholder="••••••••"
+          autocomplete="current-password"
+        />
+      </div>
+      <button class="login-btn" type="submit">Login</button>
+    </form>
+
+    <div class="divider"></div>
+    <p class="login-footer">
+      Secure sign-in &nbsp;·&nbsp; Your session is protected
+    </p>
+  </div>
+</div>

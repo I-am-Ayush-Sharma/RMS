@@ -1,0 +1,25 @@
+<h2>🔍 Check Order Status</h2>
+
+<form method="GET" action="/order_status">
+  <input type="number" name="order_id" placeholder="Enter Order ID">
+  <button>Check</button>
+</form>
+
+<hr>
+
+{% if order %}
+
+  <h3>Order ID: #{{order[0]}}</h3>
+  <p><b>Total:</b> ₹{{order[3]}}</p>
+  <p><b>Time:</b> {{order[4]}}</p>
+
+  <h3>Status: 🟡 Preparing</h3>
+
+{% else %}
+
+  <p>No order found ❌</p>
+
+{% endif %}
+
+<br>
+<a href="/menu">⬅ Back to Menu</a>

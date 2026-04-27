@@ -1,0 +1,91 @@
+<h2>Your Cart 🛒</h2>
+{% set discount = discount | default(0) %} {% set subtotal = subtotal |
+default(0) %} {% set gst = gst | default(0) %} {% set total = total | default(0)
+%} {% if cart %} {% for item in cart %}
+<div style="margin-bottom: 15px; border: 1px solid #ccc; padding: 10px">
+  {% if item.image %}
+  <img
+    src="{{ url_for('static', filename='uploads/' + item.image) }}"
+    width="80"
+  />
+  {% endif %}
+
+  <h3>{{ item.name }}</h3>
+  <p>Category: {{ item.category }}</p>
+
+  <p>₹{{ item.price }} x {{ item.quantity }}</p>
+
+  <!-- Quantity Controls -->
+  <a href="/update_quantity/{{item.id}}/inc">➕</a>
+  <a href="/update_quantity/{{item.id}}/dec">➖</a>
+
+  <!-- Remove -->
+  <a href="/remove_from_cart/{{item.id}}" style="color: red">❌ Remove</a>
+</div>
+{% endfor %}
+
+<hr />
+
+<hr />
+
+<hr />
+
+<h3>Apply Coupon</h3>
+
+<form method="POST" action="/apply_coupon">
+  <input type="text" name="coupon" placeholder="Enter coupon code" required />
+  <button>Apply</button>
+</form>
+<p><b>Available Coupons:</b></p>
+<ul>
+  <li>SAVE10 → 10% off</li>
+  <li>SAVE20 → 20% off</li>
+  <li>FLAT50 → ₹50 off</li>
+  <li>FLAT100 → ₹100 off</li>
+  <li>BIGSAVE → ₹100 off on ₹500+</li>
+</ul>
+{% if msg %}
+<p style="color: #dc2626; font-weight:bold;">{{msg}}</p>
+{% endif %}
+
+{% if coupon %}
+<p style="color: green">Applied: {{coupon}}</p>
+{% endif %}
+
+<hr />
+
+<p>Subtotal: ₹{{subtotal}}</p>
+
+{% if discount > 0 %}
+<p style="color: green">Discount: -₹{{discount}}</p>
+{% endif %}
+{% if coupon %}
+<p style="color:green;">
+  Applied: {{coupon}}
+  <a href="/remove_coupon" style="color:red; margin-left:10px;">❌ Remove</a>
+</p>
+{% endif %}
+
+
+<p>GST (5%): ₹{{gst}}</p>
+
+<h2>Total: ₹{{total}}</h2>
+
+
+<a href="/place_order"
+     style="
+    padding: 10px 15px;
+    background: #16a34a;
+    color: white;
+    border: none;
+    border-radius: 6px;
+  ">
+   Place Order 🛍️
+</a>
+
+{% else %}
+<p>Your cart is empty 😢</p>
+{% endif %}
+
+<br /><br />
+<a href="/menu">⬅ Back to Menu</a>
