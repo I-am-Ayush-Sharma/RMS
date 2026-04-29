@@ -1,6 +1,7 @@
 <h2>✅ Order Placed!</h2>
 
 <h3>Your Order ID: #{{order[0]}}</h3>
+<p><b>Name:</b> {{ order[1] }}</p>
 
 <p><b>Total:</b> ₹{{order[3]}}</p>
 <p><b>Time:</b> {{order[4]}}</p>
@@ -14,3 +15,6 @@
 <p>Please note your Order ID and wait for your order.</p>
 
 <a href="/menu">🍽️ Order More</a>
+<script>
+  localStorage.removeItem("lastNotifiedOrder");
+</script>

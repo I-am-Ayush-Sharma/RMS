@@ -1,159 +1,590 @@
+<!-- menu.html — La Maison · matches welcome page theme exactly -->
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Jost:wght@200;300;400&display=swap" rel="stylesheet" />
+
 <style>
+  /* ── TOKENS (mirror welcome page) ── */
+  :root {
+    --gold:     #c9a84c;
+    --gold-lt:  #e8c97a;
+    --cream:    #f5efe4;
+    --ink:      #1a1612;
+    --charcoal: #231f1b;
+    --card-bg:  #211d19;
+    --muted:    #8a7f72;
+    --border:   rgba(201,168,76,0.15);
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
   body {
-    background: #f8fafc;
-    font-family: sans-serif;
+    background: var(--ink);
+    font-family: 'Jost', sans-serif;
+    color: var(--cream);
+    min-height: 100vh;
   }
 
-  .item-card {
-    background: #ffffff;
-    border-radius: 12px;
-    padding: 12px;
-    width: 180px;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  /* grain overlay */
+  body::after {
+    content: '';
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E");
+    opacity: 0.04;
+    pointer-events: none;
   }
 
-  .category-block h2 {
-    color: #b91c1c;
-  }
-
-  .items {
+  /* ── TOP NAV BAR ── */
+  .top-nav {
+    position: sticky;
+    top: 0;
+    z-index: 100;
     display: flex;
-    gap: 15px;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 40px;
+    background: rgba(26,22,18,0.92);
+    border-bottom: 1px solid var(--border);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+  }
+
+  .nav-brand {
+    font-family: 'Cormorant Garamond', serif;
+    font-style: italic;
+    font-size: 1.55rem;
+    font-weight: 300;
+    color: var(--gold-lt);
+    text-decoration: none;
+    letter-spacing: 0.04em;
+  }
+
+  .nav-right {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+
+  /* admin add button */
+  .btn-add {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    padding: 9px 20px;
+    font-family: 'Jost', sans-serif;
+    font-weight: 300;
+    font-size: 0.72rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    text-decoration: none;
+    background: var(--gold);
+    color: var(--ink);
+    border: none;
+    cursor: pointer;
+    transition: background 0.25s;
+  }
+  .btn-add:hover { background: var(--gold-lt); }
+
+  /* logout */
+  .btn-logout {
+    font-family: 'Jost', sans-serif;
+    font-weight: 300;
+    font-size: 0.72rem;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    text-decoration: none;
+    color: var(--muted);
+    padding: 9px 0;
+    border-bottom: 1px solid transparent;
+    transition: color 0.2s, border-color 0.2s;
+  }
+  .btn-logout:hover { color: var(--gold); border-color: var(--gold); }
+
+  /* ── PAGE WRAPPER ── */
+  .page {
+    position: relative;
+    z-index: 1;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 48px 32px 100px;
+  }
+
+  /* ── PAGE HEADER ── */
+  .page-header {
+    text-align: center;
+    margin-bottom: 48px;
+    animation: fadeUp 0.8s ease 0.1s both;
+  }
+
+  .page-eyebrow {
+    font-size: 0.68rem;
+    font-weight: 200;
+    letter-spacing: 0.35em;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin-bottom: 12px;
+  }
+
+  .page-header h1 {
+    font-family: 'Cormorant Garamond', serif;
+    font-weight: 300;
+    font-size: clamp(2.4rem, 5vw, 4rem);
+    color: var(--cream);
+    line-height: 1;
+  }
+  .page-header h1 em {
+    font-style: italic;
+    color: var(--gold-lt);
+  }
+
+  .header-rule {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    margin-top: 20px;
+  }
+  .header-rule span {
+    display: block;
+    width: 80px;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--gold));
+  }
+  .header-rule span:last-child {
+    background: linear-gradient(90deg, var(--gold), transparent);
+  }
+  .header-rule i {
+    display: block;
+    width: 5px; height: 5px;
+    background: var(--gold);
+    transform: rotate(45deg);
+  }
+
+  /* ── TOOLBAR (search + filter + count) ── */
+  .toolbar {
+    display: flex;
+    align-items: center;
     flex-wrap: wrap;
+    gap: 12px;
+    margin-bottom: 44px;
+    padding-bottom: 24px;
+    border-bottom: 1px solid var(--border);
+    animation: fadeUp 0.8s ease 0.25s both;
   }
 
+  .toolbar-search {
+    position: relative;
+    flex: 1;
+    min-width: 220px;
+    max-width: 340px;
+  }
+  .toolbar-search svg {
+    position: absolute;
+    left: 14px; top: 50%;
+    transform: translateY(-50%);
+    width: 14px; height: 14px;
+    stroke: var(--muted);
+    fill: none;
+    pointer-events: none;
+  }
   #search {
+    width: 100%;
+    padding: 11px 14px 11px 38px;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid var(--border);
+    border-radius: 0;
+    color: var(--cream);
+    font-family: 'Jost', sans-serif;
+    font-size: 0.82rem;
+    font-weight: 300;
+    letter-spacing: 0.05em;
     outline: none;
-    transition: 0.2s;
+    transition: border-color 0.25s, background 0.25s;
   }
-
+  #search::placeholder { color: var(--muted); }
   #search:focus {
-    border-color: #16a34a;
-    box-shadow: 0 0 5px rgba(22, 163, 74, 0.4);
+    border-color: var(--gold);
+    background: rgba(201,168,76,0.04);
   }
 
-  .item-card img {
-    border-radius: 8px;
-    margin-bottom: 8px;
+  .toolbar-filter {
+    display: flex;
+    align-items: center;
+    gap: 10px;
   }
-
-  .item-card img {
-    transition: 0.3s;
+  .toolbar-filter label {
+    font-size: 0.68rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--muted);
+    white-space: nowrap;
   }
-
-  .item-card img:hover {
-    transform: scale(1.1);
-  }
-
-  .item-card p:first-of-type {
-    font-weight: bold;
-    color: #16a34a;
-  }
-
-  #search,
   #categoryFilter {
-    margin-right: 10px;
+    padding: 11px 16px;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid var(--border);
+    border-radius: 0;
+    color: var(--cream);
+    font-family: 'Jost', sans-serif;
+    font-size: 0.82rem;
+    font-weight: 300;
+    outline: none;
+    cursor: pointer;
+    transition: border-color 0.25s;
+    appearance: none;
+    -webkit-appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' fill='none'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%238a7f72' stroke-width='1.5' stroke-linecap='round'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 12px center;
+    padding-right: 34px;
+  }
+  #categoryFilter option { background: var(--charcoal); }
+  #categoryFilter:focus { border-color: var(--gold); }
+
+  .item-count {
+    margin-left: auto;
+    font-size: 0.7rem;
+    font-weight: 200;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+  .item-count strong {
+    color: var(--gold);
+    font-weight: 400;
+  }
+
+  /* ── CATEGORY BLOCK ── */
+  .menu-container { display: flex; flex-direction: column; gap: 52px; }
+
+  .category-block {
+    animation: fadeUp 0.7s ease both;
+  }
+
+  .category-header {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 24px;
+  }
+  .category-header h2 {
+    font-family: 'Cormorant Garamond', serif;
+    font-weight: 300;
+    font-style: italic;
+    font-size: 1.6rem;
+    color: var(--gold-lt);
+    white-space: nowrap;
+    letter-spacing: 0.02em;
+  }
+  .category-header::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: linear-gradient(90deg, var(--border), transparent);
+  }
+
+  /* ── ITEMS GRID ── */
+  .items {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 20px;
+  }
+
+  /* ── ITEM CARD ── */
+  .item-card {
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    padding: 0;
+    overflow: hidden;
+    transition: border-color 0.3s, transform 0.3s, box-shadow 0.3s;
+    display: flex;
+    flex-direction: column;
+  }
+  .item-card:hover {
+    border-color: rgba(201,168,76,0.45);
+    transform: translateY(-4px);
+    box-shadow: 0 16px 40px rgba(0,0,0,0.5);
+  }
+
+  .item-img-wrap {
+    width: 100%;
+    aspect-ratio: 4/3;
+    overflow: hidden;
+    background: #2a2420;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .item-img-wrap img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.5s ease;
+  }
+  .item-card:hover .item-img-wrap img {
+    transform: scale(1.07);
+  }
+  .item-no-img {
+    width: 100%;
+    aspect-ratio: 4/3;
+    background: linear-gradient(135deg, #2a2420 0%, #1e1b17 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: rgba(201,168,76,0.2);
+    font-size: 2.2rem;
+  }
+
+  .item-body {
+    padding: 14px 16px 16px;
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    gap: 4px;
+  }
+
+  .item-name {
+    font-family: 'Cormorant Garamond', serif;
+    font-weight: 400;
+    font-size: 1.05rem;
+    color: var(--cream);
+    line-height: 1.2;
+    letter-spacing: 0.01em;
+  }
+
+  .item-price {
+    font-size: 0.82rem;
+    font-weight: 300;
+    color: var(--gold);
+    letter-spacing: 0.05em;
+    margin-top: 2px;
+  }
+
+  .item-desc {
+    font-size: 0.75rem;
+    font-weight: 300;
+    color: var(--muted);
+    line-height: 1.5;
+    margin-top: 4px;
+    flex: 1;
+  }
+
+  .item-actions {
+    margin-top: 14px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  /* add to cart */
+  .btn-cart {
+    flex: 1;
+    padding: 9px 12px;
+    background: transparent;
+    border: 1px solid rgba(201,168,76,0.35);
+    color: var(--gold);
+    font-family: 'Jost', sans-serif;
+    font-size: 0.72rem;
+    font-weight: 300;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: background 0.25s, border-color 0.25s, color 0.25s;
+  }
+  .btn-cart:hover {
+    background: var(--gold);
+    border-color: var(--gold);
+    color: var(--ink);
+  }
+
+  /* admin edit / delete */
+  .btn-admin {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px; height: 32px;
+    border: 1px solid var(--border);
+    background: transparent;
+    color: var(--muted);
+    font-size: 0.75rem;
+    text-decoration: none;
+    transition: border-color 0.2s, color 0.2s, background 0.2s;
+    cursor: pointer;
+  }
+  .btn-admin:hover { border-color: var(--gold); color: var(--gold); background: rgba(201,168,76,0.08); }
+  .btn-admin.del:hover { border-color: #e05050; color: #e05050; background: rgba(224,80,80,0.08); }
+
+  /* ── TOAST ── */
+  #toast {
+    position: fixed;
+    top: 80px;
+    right: 24px;
+    background: var(--charcoal);
+    border: 1px solid var(--gold);
+    color: var(--cream);
+    padding: 16px 20px;
+    z-index: 9999;
+    display: none;
+    min-width: 240px;
+    box-shadow: 0 12px 40px rgba(0,0,0,0.6);
+    animation: slideIn 0.35s ease;
+  }
+  #toast-msg {
+    font-size: 0.82rem;
+    font-weight: 300;
+    letter-spacing: 0.04em;
+    line-height: 1.6;
+  }
+  .toast-footer {
+    margin-top: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .toast-cart-link {
+    font-size: 0.72rem;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--gold);
+    text-decoration: none;
+    border-bottom: 1px solid transparent;
+    transition: border-color 0.2s;
+  }
+  .toast-cart-link:hover { border-color: var(--gold); }
+  .toast-close {
+    background: none;
+    border: none;
+    color: var(--muted);
+    font-size: 1rem;
+    cursor: pointer;
+    padding: 0 4px;
+    line-height: 1;
+    transition: color 0.2s;
+  }
+  .toast-close:hover { color: var(--cream); }
+
+  /* ── ANIMATIONS ── */
+  @keyframes fadeUp {
+    from { transform: translateY(18px); opacity: 0; }
+    to   { transform: translateY(0);    opacity: 1; }
+  }
+  @keyframes slideIn {
+    from { transform: translateX(16px); opacity: 0; }
+    to   { transform: translateX(0);    opacity: 1; }
   }
 </style>
 
-{% if session['role'] == 'admin' %}
-<a href="/add_menu" style="padding:8px 12px; background:#16a34a; color:white; border-radius:6px; text-decoration:none;">
-  ➕ Add Menu Item
-</a>
-{% endif %}
-
-<input type="text" id="search" placeholder="🔍 Search food..."
-  style="padding:8px; width:250px; margin:10px 0; border-radius:6px; border:1px solid #ccc;">
-<label for="catfilter">Filter:</label>
-<select id="categoryFilter" style="padding:8px; margin-left:10px; border-radius:6px;" name="catfilter">
-  <option value="all">All Categories</option>
-  {% for cat in categories %}
-  <option value="{{cat[1]}}">{{cat[1]}}</option>
-  {% endfor %}
-</select>
-<p>Total Items: {{ items|length }}</p>
-
-<!-- <h2>Menu</h2>
-
-{% if session['role'] == 'admin' %}
-<form method="POST" action="/add_menu" enctype="multipart/form-data">
-  Name: <input type="text" name="name" required />
-
-  Category:
-  <select name="category">
-    {% for cat in categories %}
-    <option value="{{cat[0]}}">{{cat[1]}}</option>
-    {% endfor %}
-  </select>
-
-  Price: <input type="number" name="price" required />
-
-  Description:
-  <input type="text" name="description" />
-
-  Image:
-  <input type="file" name="image" />
-
-  <button>Add</button>
-</form>
-{% endif %} -->
-
-<hr />
-
-{% set ns = namespace(current=None) %}
-
-<div class="menu-container">
-
-  {% for item in items %}
-
-  {% if ns.current != item[6] %}
-
-  {% if not loop.first %}
-</div> <!-- close items -->
-</div> <!-- close category -->
-{% endif %}
-
-<div class="category-block">
-  <h2>{{ item[6] }}</h2>
-  <div class="items">
-
-    {% set ns.current = item[6] %}
+<!-- ════════════════════════════════════════ TOP NAV -->
+<nav class="top-nav">
+  <a href="/" class="nav-brand">La Maison</a>
+  <div class="nav-right">
+    {% if session['role'] == 'admin' %}
+    <a href="/add_menu" class="btn-add">＋ Add Item</a>
     {% endif %}
+    <a href="/logout" class="btn-logout">Logout</a>
+  </div>
+</nav>
 
-    <div class="item-card">
+<!-- ════════════════════════════════════════ PAGE -->
+<div class="page">
 
-      {% if item[4] %}
-      <img src="{{ url_for('static', filename='uploads/' + item[4]) }}" width="150px">
-      {% endif %}
-
-      <h3>{{ item[1] }}</h3>
-      <p>₹{{ item[3] }}</p>
-      {% if item[5] %}
-      <p>{{ item[5] }}</p>
-      {% endif %}
-
-      {% if session['role'] == 'admin' %}
-      <a href="/edit_menu/{{item[0]}}">✏️</a>
-      <a href="/delete_menu/{{item[0]}}" onclick="return confirm('Delete this item?')">❌</a>
-      {% else %}
-      <br>
-      <a href="/add_to_cart/{{item[0]}}"
-        style="background:#16a34a;color:white;padding:5px 10px;border-radius:5px;text-decoration:none;">
-        🛒 Add to Cart
-      </a>
-      {% endif %}
-
+  <!-- Header -->
+  <div class="page-header">
+    <p class="page-eyebrow">Curated with care</p>
+    <h1>Our <em>Menu</em></h1>
+    <div class="header-rule">
+      <span></span><i></i><span></span>
     </div>
+  </div>
+
+  <!-- Toolbar -->
+  <div class="toolbar">
+    <div class="toolbar-search">
+      <svg viewBox="0 0 16 16" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="6.5" cy="6.5" r="5"/><line x1="10.5" y1="10.5" x2="15" y2="15"/>
+      </svg>
+      <input type="text" id="search" placeholder="Search dishes…">
+    </div>
+    <div class="toolbar-filter">
+      <label for="categoryFilter">Category</label>
+      <select id="categoryFilter" name="catfilter">
+        <option value="all">All</option>
+        {% for cat in categories %}
+        <option value="{{cat[1]}}">{{cat[1]}}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <span class="item-count">
+      <strong>{{ items|length }}</strong>&nbsp;items
+    </span>
+  </div>
+
+  <!-- ── MENU (original Jinja logic preserved exactly) ── -->
+  {% set ns = namespace(current=None) %}
+
+  <div class="menu-container">
+
+    {% for item in items %}
+
+      {% if ns.current != item[6] %}
+
+        {% if not loop.first %}
+        </div><!-- /items -->
+        </div><!-- /category-block -->
+        {% endif %}
+
+        <div class="category-block">
+          <div class="category-header"><h2>{{ item[6] }}</h2></div>
+          <div class="items">
+
+        {% set ns.current = item[6] %}
+      {% endif %}
+
+      <div class="item-card">
+
+        {% if item[4] %}
+        <div class="item-img-wrap">
+          <img src="{{ url_for('static', filename='uploads/' + item[4]) }}" alt="{{ item[1] }}">
+        </div>
+        {% else %}
+        <div class="item-no-img">🍽</div>
+        {% endif %}
+
+        <div class="item-body">
+          <div class="item-name">{{ item[1] }}</div>
+          <div class="item-price">₹{{ item[3] }}</div>
+          {% if item[5] %}<div class="item-desc">{{ item[5] }}</div>{% endif %}
+
+          <div class="item-actions">
+            {% if session['role'] == 'admin' %}
+              <a href="/edit_menu/{{item[0]}}" class="btn-admin" title="Edit">✏</a>
+              <a href="/delete_menu/{{item[0]}}" class="btn-admin del" title="Delete"
+                 onclick="return confirm('Delete this item?')">✕</a>
+            {% else %}
+              <button class="btn-cart" onclick="addToCart({{item[0]}})">Add to Cart</button>
+            {% endif %}
+          </div>
+        </div>
+
+      </div>
 
     {% endfor %}
 
+    </div><!-- /items -->
+  </div><!-- /category-block -->
+
+  </div><!-- /menu-container -->
+
+</div><!-- /page -->
+
+<!-- ════════════════════════════════════════ TOAST (all JS kept identical) -->
+<div id="toast">
+  <span id="toast-msg"></span>
+  <div class="toast-footer">
+    <a href="/cart" class="toast-cart-link">View Cart →</a>
+    <button class="toast-close" onclick="closeToast()">✕</button>
   </div>
 </div>
-</div>
-
-
-<br>
-<a href="/logout">Logout</a>
 
 <script>
   const search = document.getElementById("search");
@@ -169,12 +600,11 @@
 
       category.querySelectorAll(".item-card").forEach(card => {
         let text = card.innerText.toLowerCase();
-
         let matchesSearch = text.includes(searchVal);
         let matchesCategory = (selectedCat === "all" || categoryName === selectedCat);
 
         if (matchesSearch && matchesCategory) {
-          card.style.display = "block";
+          card.style.display = "flex";
           hasVisibleItem = true;
         } else {
           card.style.display = "none";
@@ -187,4 +617,283 @@
 
   search.addEventListener("keyup", applyFilter);
   filter.addEventListener("change", applyFilter);
+
+  function addToCart(id) {
+    fetch(`/add_to_cart/${id}`)
+      .then(res => {
+        if (!res.ok) throw new Error('Network response was not ok');
+        return res.json();
+      })
+      .then(data => {
+        if (data.error) {
+          alert(data.error);
+        } else {
+          showToast(data.total_items);
+        }
+      })
+      .catch(error => {
+        console.error('Error:', error);
+        alert('Failed to add to cart');
+      });
+  }
+
+  function showToast(count) {
+    let toast = document.getElementById("toast");
+    let msg = document.getElementById("toast-msg");
+    msg.innerHTML = `Added to cart &nbsp;·&nbsp; ${count} item${count !== 1 ? 's' : ''} total`;
+    toast.style.display = "block";
+    // re-trigger animation
+    toast.style.animation = 'none';
+    toast.offsetHeight;
+    toast.style.animation = '';
+  }
+
+  function closeToast() {
+    document.getElementById("toast").style.display = "none";
+  }
 </script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!-- <!doctype html>
+<html>
+<head>
+  <title>Menu</title>
+
+  <style>
+    body {
+      background: #f8fafc;
+      font-family: sans-serif;
+      padding: 20px;
+    }
+
+    .top-bar {
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      margin-bottom:20px;
+    }
+
+    .item-card {
+      background: #fff;
+      border-radius: 12px;
+      padding: 12px;
+      width: 180px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+
+    .items {
+      display:flex;
+      gap:15px;
+      flex-wrap:wrap;
+    }
+
+    .item-card img {
+      width:100%;
+      border-radius:8px;
+      transition:0.3s;
+    }
+
+    .item-card img:hover {
+      transform: scale(1.1);
+    }
+
+    .price {
+      color:#16a34a;
+      font-weight:bold;
+    }
+
+    .btn {
+      background:#16a34a;
+      color:white;
+      padding:6px 10px;
+      border-radius:6px;
+      border:none;
+      cursor:pointer;
+    }
+
+    .category-block h2 {
+      color:#b91c1c;
+      margin-top:20px;
+    }
+
+    /* 🔥 TOAST */
+    #toast {
+      position:fixed;
+      top:20px;
+      right:20px;
+      background:#333;
+      color:white;
+      padding:15px;
+      border-radius:8px;
+      display:none;
+      z-index:1000;
+    }
+  </style>
+</head>
+
+<body>
+
+<div class="top-bar">
+  <div>
+    <input type="text" id="search" placeholder="🔍 Search..."
+      style="padding:8px;border-radius:6px;border:1px solid #ccc;">
+    
+    <select id="categoryFilter" style="padding:8px;border-radius:6px;">
+      <option value="all">All</option>
+      {% for cat in categories %}
+      <option value="{{cat[1]}}">{{cat[1]}}</option>
+      {% endfor %}
+    </select>
+  </div>
+
+  {% if session.get('admin') %}
+  <a href="/add_menu" class="btn">➕ Add Item</a>
+  {% endif %}
+</div>
+
+<p>Total Items: {{ items|length }}</p>
+
+<hr>
+
+{% set ns = namespace(current=None) %}
+
+{% for item in items %}
+
+  {% if ns.current != item[6] %}
+
+    {% if not loop.first %}
+      </div></div>
+    {% endif %}
+
+    <div class="category-block">
+      <h2>{{ item[6] }}</h2>
+      <div class="items">
+
+    {% set ns.current = item[6] %}
+  {% endif %}
+
+  <div class="item-card">
+
+    {% if item[4] %}
+    <img src="{{ url_for('static', filename='uploads/' + item[4]) }}">
+    {% endif %}
+
+    <h3>{{ item[1] }}</h3>
+    <p class="price">₹{{ item[3] }}</p>
+
+    {% if item[5] %}
+    <p>{{ item[5] }}</p>
+    {% endif %}
+
+    {% if session.get('admin') %}
+      <a href="/edit_menu/{{item[0]}}">✏️</a>
+      <a href="/delete_menu/{{item[0]}}" onclick="return confirm('Delete?')">❌</a>
+    {% else %}
+      <button onclick="addToCart({{item[0]}})" class="btn">
+        🛒 Add
+      </button>
+    {% endif %}
+
+  </div>
+
+{% endfor %}
+
+</div></div>
+
+<!-- 🔥 TOAST -->
+<!-- <div id="toast">
+  <span id="toast-msg"></span><br>
+  <a href="/cart" style="color:yellow;">Go to Cart</a> -->
+</div>
+
+<!-- <script>
+function addToCart(id){
+  fetch(`/add_to_cart/${id}`)
+    .then(res => res.json())
+    .then(data => {
+      showToast(data.total_items);
+    });
+}
+
+function showToast(count){
+  let toast = document.getElementById("toast");
+  let msg = document.getElementById("toast-msg");
+
+  msg.innerHTML = `✅ Added to cart<br>Total items: ${count}`;
+  toast.style.display = "block";
+}
+
+const search = document.getElementById("search");
+const filter = document.getElementById("categoryFilter");
+
+function applyFilter(){
+  let s = search.value.toLowerCase();
+  let cat = filter.value;
+
+  document.querySelectorAll(".category-block").forEach(block=>{
+    let name = block.querySelector("h2").innerText;
+    let visible = false;
+
+    block.querySelectorAll(".item-card").forEach(card=>{
+      let text = card.innerText.toLowerCase();
+
+      let ok = text.includes(s) && (cat==="all" || name===cat);
+
+      card.style.display = ok ? "block":"none";
+      if(ok) visible = true;
+    });
+
+    block.style.display = visible ? "block":"none";
+  });
+}
+
+search.addEventListener("keyup", applyFilter);
+filter.addEventListener("change", applyFilter);
+</script>
+
+</body>
+</html> --> 

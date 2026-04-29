@@ -1,28 +1,42 @@
-{% for order in orders %}
+<div id="orders-container"></div>
 
-<div style="border:1px solid #ccc; padding:10px; margin-bottom:15px;">
+<script>
+function refreshOrders(){
+  fetch('/chef_orders_api')
+    .then(res => res.json())
+    .then(data => {
 
-  <h3>Order #{{ order.id }}</h3>
+      let html = "";
 
-  <b>Items:</b>
- <ul>
-  {% for item in order["items"] %}
-    <li>{{ item.name }} x {{ item.quantity }}</li>
-  {% endfor %}
-</ul>
+      data.orders.forEach(order => {
 
-  <p><b>Total:</b> ₹{{ order.total }}</p>
-  <p><b>Time:</b> {{ order.time }}</p>
-  <p><b>Status:</b> {{ order.status }}</p>
+        html += `
+        <div style="border:1px solid #ccc;padding:10px;margin-bottom:15px">
+          <h3>Order #${order.id}</h3>
+          <p><b>Name:</b> ${order.name}</p>
 
-  {% if order.status != "Ready" %}
-    <a href="/mark_ready/{{ order.id }}">
-      <button>Mark Ready</button>
-    </a>
-  {% else %}
-    <span style="color:green;">✔ Ready</span>
-  {% endif %}
+          <b>Items:</b>
+          <ul>
+            ${order.items.map(i => `<li>${i.name} x ${i.quantity}</li>`).join("")}
+          </ul>
 
-</div>
+          <p><b>Total:</b> ₹${order.total}</p>
+          <p><b>Time:</b> ${order.time}</p>
+          <p><b>Status:</b> ${order.status}</p>
 
-{% endfor %}
+          ${
+            order.status !== "Ready"
+            ? `<a href="/mark_ready/${order.id}"><button>Mark Ready</button></a>`
+            : `<span style="color:green">✔ Ready</span>`
+          }
+        </div>
+        `;
+      });
+
+      document.getElementById("orders-container").innerHTML = html;
+    });
+}
+
+setInterval(refreshOrders, 5000);
+refreshOrders();
+</script>

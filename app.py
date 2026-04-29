@@ -1,7 +1,7 @@
 import os
 from werkzeug.utils import secure_filename
 
-from flask import Flask, Response, render_template, request, redirect, session
+from flask import Flask, Response, render_template, request, redirect, session, jsonify
 import sqlite3
 
 
@@ -157,6 +157,7 @@ def chef_dashboard():
 
         decoded_orders.append({
             "id": order[0],
+            "name": order[1],
             "items": items,
             "total": order[3],
             "time": order[4],
@@ -174,9 +175,16 @@ def mark_ready(order_id):
     cur = conn.cursor()
 
     cur.execute("UPDATE orders SET status='Ready' WHERE id=?", (order_id,))
-
     conn.commit()
+
+    # 🔥 get order info
+    cur.execute("SELECT username FROM orders WHERE id=?", (order_id,))
+    user = cur.fetchone()
+
     conn.close()
+
+    # 🔥 SET NOTIFICATION
+    session['notify'] = f"{user[0]}, your order #{order_id} is READY!"
 
     return redirect('/chef')
 
@@ -338,46 +346,47 @@ def welcome():
 @app.route('/add_to_cart/<int:item_id>')
 def add_to_cart(item_id):
 
-    conn = sqlite3.connect('database.db')
-    cur = conn.cursor()
-
-    cur.execute("""
-        SELECT menu.*, categories.name 
-        FROM menu 
-        JOIN categories ON menu.category_id = categories.id
-        WHERE menu.id=?
-    """, (item_id,))
-    
-    db_item = cur.fetchone()   # 👈 rename to avoid conflict
-    conn.close()
-
-    if not db_item:
-        return "Item not found ❌"
-
     cart = session.get('cart', [])
 
-    # 🔥 check if item already exists
+    # 🔹 item find
     found = False
-    for c in cart:
-        if c['id'] == db_item[0]:
-            c['quantity'] += 1
+    for item in cart:
+        if item['id'] == item_id:
+            item['quantity'] += 1
             found = True
             break
 
-    # 👉 new item add karo
     if not found:
+        # DB se item fetch (simplified)
+        conn = sqlite3.connect('database.db')
+        cur = conn.cursor()
+        cur.execute("""
+        SELECT menu.id, menu.name, menu.price, menu.image, categories.name
+        FROM menu
+        JOIN categories ON menu.category_id = categories.id
+        WHERE menu.id=?
+        """, (item_id,))
+        data = cur.fetchone()
+        conn.close()
+
+        if not data:
+            return jsonify({"error": "Item not found"}), 404
+
         cart.append({
-            'id': db_item[0],
-            'name': db_item[1],
-            'price': db_item[3],
-            'image': db_item[4],
-            'category': db_item[6],
-            'quantity': 1
+        "id": data[0],
+        "name": data[1],
+        "price": data[2],
+        "image": data[3],       # 🔥 add this
+        "category": data[4],    # 🔥 add this
+        "quantity": 1
         })
 
     session['cart'] = cart
 
-    return redirect('/cart')
+    # 🔥 total items count
+    total_items = sum(item['quantity'] for item in cart)
+
+    return jsonify({"status": "success", "total_items": total_items})
 
 
 #coupon apply route
@@ -506,13 +515,16 @@ def update_quantity(item_id, action):
 import json
 from datetime import datetime
 
-@app.route('/place_order')
+@app.route('/place_order', methods=['POST'])
 def place_order():
 
     cart = session.get('cart', [])
+    
 
     if not cart:
         return "Cart is empty ❌"
+
+    customer_name = request.form.get('customer_name')
 
     subtotal = sum(item['price'] * item['quantity'] for item in cart)
 
@@ -536,17 +548,17 @@ def place_order():
     cur.execute(
     "INSERT INTO orders (username, items, total, date, status) VALUES (?, ?, ?, ?, ?)",
     (
-        "Customer",
+        customer_name or "Customer",
         json.dumps(cart),
         total,
         datetime.now().strftime("%Y-%m-%d %H:%M"),
         "Preparing"
         )
     )
-
     order_id = cur.lastrowid   # 🔥 KEY POINT
 
     session['last_order_id'] = order_id
+    session['last_order_name'] = customer_name
 
     conn.commit()
     conn.close()
@@ -578,17 +590,18 @@ def order_status(order_id):
 def check_order():
 
     order_id = request.args.get('order_id')
+    order = None
 
     if order_id:
-        return redirect(f'/order_status/{order_id}')
+        conn = sqlite3.connect('database.db')
+        cur = conn.cursor()
 
-    # fallback → last order
-    order_id = session.get('last_order_id')
+        cur.execute("SELECT * FROM orders WHERE id=?", (order_id,))
+        order = cur.fetchone()
 
-    if order_id:
-        return redirect(f'/order_status/{order_id}')
+        conn.close()
 
-    return "No order found ❌"
+    return render_template('check_status.html', order=order)
 
 
 
@@ -614,6 +627,7 @@ def admin_orders():
     for order in orders:
         decoded_orders.append({
             "id": order[0],
+            "name": order[1],
             "items": json.loads(order[2]),
             "total": order[3],
             "time": order[4],
@@ -622,6 +636,79 @@ def admin_orders():
 
     return render_template('admin_orders.html', orders=decoded_orders)
 
+
+
+
+
+#check status api route
+@app.route('/check_status_api/<int:order_id>')
+def check_status_api(order_id):
+
+    conn = sqlite3.connect('database.db')
+    cur = conn.cursor()
+
+    cur.execute("SELECT status, username FROM orders WHERE id=?", (order_id,))
+    order = cur.fetchone()
+
+    conn.close()
+
+    if order:
+        return {
+            "status": order[0],
+            "name": order[1]
+        }
+
+    return {"status": "Not Found"}
+
+#chef orders api route
+@app.route('/chef_orders_api')
+def chef_orders_api():
+
+    import json
+
+    conn = sqlite3.connect('database.db')
+    cur = conn.cursor()
+
+    cur.execute("SELECT * FROM orders ORDER BY id DESC")
+    rows = cur.fetchall()
+
+    conn.close()
+
+    orders = []
+    for row in rows:
+        orders.append({
+            "id": row[0],
+            "name": row[1],
+            "items": json.loads(row[2]),   # ✅ correct
+            "total": row[3],               # ✅ correct
+            "time": row[4],                # ✅ correct
+            "status": row[5]               # ✅ correct
+        })
+
+    return {"orders": orders}
+
+
+
+#latest orders api route
+@app.route('/latest_order_api')
+def latest_order_api():
+
+    conn = sqlite3.connect('database.db')
+    cur = conn.cursor()
+
+    cur.execute("SELECT id, username, status FROM orders ORDER BY id DESC LIMIT 1")
+    order = cur.fetchone()
+
+    conn.close()
+
+    if order:
+        return {
+            "id": order[0],
+            "name": order[1],
+            "status": order[2]
+        }
+
+    return {}
 
 
 
