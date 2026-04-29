@@ -1,132 +1,625 @@
-<h2>Your Cart 🛒</h2>
-{% set discount = discount | default(0) %} {% set subtotal = subtotal |
-default(0) %} {% set gst = gst | default(0) %} {% set total = total | default(0)
-%} {% if cart %} {% for item in cart %}
-<div style="margin-bottom: 15px; border: 1px solid #ccc; padding: 10px">
-  {% if item.image %}
-  <img
-    src="{{ url_for('static', filename='uploads/' + item.image) }}"
-    width="80"
-  />
+<!-- cart.html — La Maison · matches welcome & menu page theme -->
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Jost:wght@200;300;400&display=swap" rel="stylesheet" />
+
+<style>
+  :root {
+    --gold:     #c9a84c;
+    --gold-lt:  #e8c97a;
+    --cream:    #f5efe4;
+    --ink:      #1a1612;
+    --charcoal: #231f1b;
+    --card-bg:  #211d19;
+    --muted:    #8a7f72;
+    --border:   rgba(201,168,76,0.15);
+    --red:      #e05050;
+    --green:    #4caf7d;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--ink);
+    font-family: 'Jost', sans-serif;
+    color: var(--cream);
+    min-height: 100vh;
+  }
+
+  body::after {
+    content: '';
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E");
+    opacity: 0.04;
+    pointer-events: none;
+  }
+
+  /* ── NAV ── */
+  .top-nav {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 40px;
+    background: rgba(26,22,18,0.92);
+    border-bottom: 1px solid var(--border);
+    backdrop-filter: blur(16px);
+  }
+  .nav-brand {
+    font-family: 'Cormorant Garamond', serif;
+    font-style: italic;
+    font-size: 1.55rem;
+    font-weight: 300;
+    color: var(--gold-lt);
+    text-decoration: none;
+  }
+  .nav-back {
+    font-size: 0.72rem;
+    font-weight: 300;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--muted);
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: color 0.2s;
+  }
+  .nav-back:hover { color: var(--gold); }
+  .nav-back svg { width: 14px; height: 14px; stroke: currentColor; fill: none; }
+
+  /* ── PAGE ── */
+  .page {
+    position: relative;
+    z-index: 1;
+    max-width: 960px;
+    margin: 0 auto;
+    padding: 48px 32px 100px;
+  }
+
+  /* ── PAGE HEADER ── */
+  .page-header {
+    text-align: center;
+    margin-bottom: 48px;
+    animation: fadeUp 0.8s ease 0.1s both;
+  }
+  .page-eyebrow {
+    font-size: 0.68rem;
+    font-weight: 200;
+    letter-spacing: 0.35em;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin-bottom: 12px;
+  }
+  .page-header h1 {
+    font-family: 'Cormorant Garamond', serif;
+    font-weight: 300;
+    font-size: clamp(2.4rem, 5vw, 3.8rem);
+    color: var(--cream);
+    line-height: 1;
+  }
+  .page-header h1 em { font-style: italic; color: var(--gold-lt); }
+  .header-rule {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    margin-top: 18px;
+  }
+  .header-rule span {
+    display: block; width: 80px; height: 1px;
+    background: linear-gradient(90deg, transparent, var(--gold));
+  }
+  .header-rule span:last-child { background: linear-gradient(90deg, var(--gold), transparent); }
+  .header-rule i { display: block; width: 5px; height: 5px; background: var(--gold); transform: rotate(45deg); }
+
+  /* ── TWO-COLUMN LAYOUT ── */
+  .cart-layout {
+    display: grid;
+    grid-template-columns: 1fr 360px;
+    gap: 32px;
+    align-items: start;
+    animation: fadeUp 0.8s ease 0.25s both;
+  }
+  @media (max-width: 780px) {
+    .cart-layout { grid-template-columns: 1fr; }
+  }
+
+  /* ── CART ITEMS ── */
+  .cart-items { display: flex; flex-direction: column; gap: 14px; }
+
+  .cart-card {
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    display: flex;
+    gap: 16px;
+    padding: 16px;
+    transition: border-color 0.3s;
+  }
+  .cart-card:hover { border-color: rgba(201,168,76,0.35); }
+
+  .cart-card-img {
+    width: 84px;
+    height: 84px;
+    object-fit: cover;
+    flex-shrink: 0;
+  }
+  .cart-card-no-img {
+    width: 84px;
+    height: 84px;
+    background: #2a2420;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: rgba(201,168,76,0.2);
+    font-size: 1.6rem;
+  }
+
+  .cart-card-body { flex: 1; display: flex; flex-direction: column; gap: 4px; }
+  .cart-card-name {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.1rem;
+    font-weight: 400;
+    color: var(--cream);
+  }
+  .cart-card-cat {
+    font-size: 0.68rem;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+  .cart-card-price {
+    font-size: 0.82rem;
+    color: var(--gold);
+    font-weight: 300;
+    margin-top: 4px;
+  }
+
+  .cart-card-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 10px;
+  }
+  .qty-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px; height: 28px;
+    border: 1px solid var(--border);
+    background: transparent;
+    color: var(--cream);
+    font-size: 1rem;
+    text-decoration: none;
+    transition: border-color 0.2s, background 0.2s, color 0.2s;
+    line-height: 1;
+  }
+  .qty-btn:hover { border-color: var(--gold); color: var(--gold); background: rgba(201,168,76,0.06); }
+  .qty-display {
+    font-size: 0.85rem;
+    font-weight: 300;
+    min-width: 20px;
+    text-align: center;
+    color: var(--cream);
+  }
+  .btn-remove {
+    margin-left: auto;
+    font-size: 0.68rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--muted);
+    text-decoration: none;
+    border-bottom: 1px solid transparent;
+    transition: color 0.2s, border-color 0.2s;
+  }
+  .btn-remove:hover { color: var(--red); border-color: var(--red); }
+
+  /* ── EMPTY STATE ── */
+  .empty-state {
+    text-align: center;
+    padding: 60px 20px;
+    color: var(--muted);
+    grid-column: 1 / -1;
+  }
+  .empty-state .empty-icon { font-size: 3rem; margin-bottom: 16px; opacity: 0.4; }
+  .empty-state p {
+    font-family: 'Cormorant Garamond', serif;
+    font-style: italic;
+    font-size: 1.3rem;
+    margin-bottom: 24px;
+  }
+  .btn-browse {
+    display: inline-block;
+    padding: 11px 28px;
+    border: 1px solid rgba(201,168,76,0.4);
+    color: var(--gold);
+    font-size: 0.72rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    text-decoration: none;
+    transition: background 0.25s, border-color 0.25s;
+  }
+  .btn-browse:hover { background: rgba(201,168,76,0.08); border-color: var(--gold); }
+
+  /* ── RIGHT PANEL (summary + coupon) ── */
+  .cart-panel { display: flex; flex-direction: column; gap: 20px; }
+
+  .panel-box {
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    padding: 24px;
+  }
+  .panel-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-style: italic;
+    font-size: 1.15rem;
+    color: var(--gold-lt);
+    margin-bottom: 18px;
+    padding-bottom: 14px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  /* coupon form */
+  .coupon-form {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 18px;
+  }
+  .coupon-input {
+    flex: 1;
+    padding: 10px 14px;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid var(--border);
+    color: var(--cream);
+    font-family: 'Jost', sans-serif;
+    font-size: 0.8rem;
+    font-weight: 300;
+    letter-spacing: 0.06em;
+    outline: none;
+    transition: border-color 0.25s;
+  }
+  .coupon-input::placeholder { color: var(--muted); }
+  .coupon-input:focus { border-color: var(--gold); }
+  .btn-apply {
+    padding: 10px 18px;
+    background: transparent;
+    border: 1px solid rgba(201,168,76,0.4);
+    color: var(--gold);
+    font-family: 'Jost', sans-serif;
+    font-size: 0.72rem;
+    font-weight: 300;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: background 0.25s, border-color 0.25s;
+  }
+  .btn-apply:hover { background: rgba(201,168,76,0.1); border-color: var(--gold); }
+
+  .coupon-list {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+  .coupon-list li {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 0.75rem;
+    font-weight: 300;
+    color: var(--muted);
+  }
+  .coupon-tag {
+    font-size: 0.68rem;
+    letter-spacing: 0.12em;
+    padding: 2px 8px;
+    border: 1px solid rgba(201,168,76,0.25);
+    color: var(--gold);
+    font-weight: 300;
+    white-space: nowrap;
+  }
+
+  .coupon-msg-error { font-size: 0.78rem; color: var(--red); margin-bottom: 10px; font-weight: 300; }
+  .coupon-msg-ok {
+    font-size: 0.78rem;
+    color: var(--green);
+    margin-bottom: 10px;
+    font-weight: 300;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+  }
+  .btn-remove-coupon {
+    font-size: 0.68rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--muted);
+    text-decoration: none;
+    border-bottom: 1px solid transparent;
+    transition: color 0.2s, border-color 0.2s;
+  }
+  .btn-remove-coupon:hover { color: var(--red); border-color: var(--red); }
+
+  /* totals */
+  .totals { display: flex; flex-direction: column; gap: 10px; }
+  .total-row {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.82rem;
+    font-weight: 300;
+    color: var(--muted);
+  }
+  .total-row.discount { color: var(--green); }
+  .total-row.grand {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.25rem;
+    font-weight: 400;
+    color: var(--cream);
+    padding-top: 12px;
+    margin-top: 4px;
+    border-top: 1px solid var(--border);
+  }
+  .total-row.grand span:last-child { color: var(--gold-lt); }
+
+  /* pay button */
+  .btn-pay {
+    width: 100%;
+    padding: 15px;
+    background: var(--gold);
+    border: none;
+    color: var(--ink);
+    font-family: 'Jost', sans-serif;
+    font-size: 0.78rem;
+    font-weight: 300;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: background 0.25s;
+    margin-top: 8px;
+  }
+  .btn-pay:hover { background: var(--gold-lt); }
+
+  /* ── MODAL OVERLAY ── */
+  #overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(10,8,6,0.85);
+    z-index: 1000;
+    justify-content: center;
+    align-items: center;
+    backdrop-filter: blur(6px);
+  }
+  .modal {
+    background: var(--charcoal);
+    border: 1px solid var(--border);
+    padding: 40px 36px;
+    width: 100%;
+    max-width: 380px;
+    text-align: center;
+    animation: fadeUp 0.35s ease;
+  }
+  .modal-eyebrow {
+    font-size: 0.68rem;
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin-bottom: 10px;
+  }
+  .modal h3 {
+    font-family: 'Cormorant Garamond', serif;
+    font-weight: 300;
+    font-size: 1.7rem;
+    color: var(--cream);
+    margin-bottom: 24px;
+  }
+  .modal-input {
+    width: 100%;
+    padding: 12px 16px;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid var(--border);
+    color: var(--cream);
+    font-family: 'Jost', sans-serif;
+    font-size: 0.85rem;
+    font-weight: 300;
+    letter-spacing: 0.05em;
+    outline: none;
+    text-align: center;
+    margin-bottom: 20px;
+    transition: border-color 0.25s;
+  }
+  .modal-input::placeholder { color: var(--muted); }
+  .modal-input:focus { border-color: var(--gold); }
+  .btn-confirm {
+    width: 100%;
+    padding: 13px;
+    background: var(--gold);
+    border: none;
+    color: var(--ink);
+    font-family: 'Jost', sans-serif;
+    font-size: 0.78rem;
+    font-weight: 300;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: background 0.25s;
+  }
+  .btn-confirm:hover { background: var(--gold-lt); }
+  .modal-cancel {
+    display: block;
+    margin-top: 14px;
+    font-size: 0.7rem;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--muted);
+    cursor: pointer;
+    background: none;
+    border: none;
+    transition: color 0.2s;
+  }
+  .modal-cancel:hover { color: var(--cream); }
+
+  /* ── ANIMATIONS ── */
+  @keyframes fadeUp {
+    from { transform: translateY(18px); opacity: 0; }
+    to   { transform: translateY(0);    opacity: 1; }
+  }
+</style>
+
+<!-- ══════════════════════ NAV -->
+<nav class="top-nav">
+  <a href="/" class="nav-brand">La Maison</a>
+  <a href="/menu" class="nav-back">
+    <svg viewBox="0 0 16 16" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M10 3L5 8l5 5"/>
+    </svg>
+    Back to Menu
+  </a>
+</nav>
+
+<!-- ══════════════════════ PAGE -->
+{% set discount = discount | default(0) %}
+{% set subtotal = subtotal | default(0) %}
+{% set gst = gst | default(0) %}
+{% set total = total | default(0) %}
+
+<div class="page">
+
+  <!-- Header -->
+  <div class="page-header">
+    <p class="page-eyebrow">Review your selection</p>
+    <h1>Your <em>Cart</em></h1>
+    <div class="header-rule"><span></span><i></i><span></span></div>
+  </div>
+
+  {% if cart %}
+  <div class="cart-layout">
+
+    <!-- ── LEFT: CART ITEMS -->
+    <div class="cart-items">
+      {% for item in cart %}
+      <div class="cart-card">
+
+        {% if item.image %}
+        <img class="cart-card-img"
+             src="{{ url_for('static', filename='uploads/' + item.image) }}"
+             alt="{{ item.name }}">
+        {% else %}
+        <div class="cart-card-no-img">🍽</div>
+        {% endif %}
+
+        <div class="cart-card-body">
+          <div class="cart-card-name">{{ item.name }}</div>
+          <div class="cart-card-cat">{{ item.category }}</div>
+          <div class="cart-card-price">₹{{ item.price }} × {{ item.quantity }}</div>
+
+          <div class="cart-card-actions">
+            <a href="/update_quantity/{{item.id}}/dec" class="qty-btn" title="Decrease">−</a>
+            <span class="qty-display">{{ item.quantity }}</span>
+            <a href="/update_quantity/{{item.id}}/inc" class="qty-btn" title="Increase">+</a>
+            <a href="/remove_from_cart/{{item.id}}" class="btn-remove">Remove</a>
+          </div>
+        </div>
+
+      </div>
+      {% endfor %}
+    </div>
+
+    <!-- ── RIGHT: PANEL -->
+    <div class="cart-panel">
+
+      <!-- Coupon Box -->
+      <div class="panel-box">
+        <div class="panel-title">Apply Coupon</div>
+
+        <form method="POST" action="/apply_coupon" class="coupon-form">
+          <input type="text" name="coupon" placeholder="Coupon code" required class="coupon-input">
+          <button type="submit" class="btn-apply">Apply</button>
+        </form>
+
+        {% if msg %}
+        <p class="coupon-msg-error">{{ msg }}</p>
+        {% endif %}
+
+        {% if coupon %}
+        <p class="coupon-msg-ok">
+          <span>✓ {{ coupon }} applied</span>
+          <a href="/remove_coupon" class="btn-remove-coupon">Remove</a>
+        </p>
+        {% endif %}
+
+        <ul class="coupon-list">
+          <li><span class="coupon-tag">SAVE10</span> 10% off</li>
+          <li><span class="coupon-tag">SAVE20</span> 20% off</li>
+          <li><span class="coupon-tag">FLAT50</span> ₹50 off</li>
+          <li><span class="coupon-tag">FLAT100</span> ₹100 off</li>
+          <li><span class="coupon-tag">BIGSAVE</span> ₹100 off on orders ₹500+</li>
+        </ul>
+      </div>
+
+      <!-- Summary Box -->
+      <div class="panel-box">
+        <div class="panel-title">Order Summary</div>
+
+        <div class="totals">
+          <div class="total-row">
+            <span>Subtotal</span>
+            <span>₹{{ subtotal }}</span>
+          </div>
+          {% if discount > 0 %}
+          <div class="total-row discount">
+            <span>Discount</span>
+            <span>−₹{{ discount }}</span>
+          </div>
+          {% endif %}
+          <div class="total-row">
+            <span>GST (5%)</span>
+            <span>₹{{ gst }}</span>
+          </div>
+          <div class="total-row grand">
+            <span>Total</span>
+            <span>₹{{ total }}</span>
+          </div>
+        </div>
+
+        <button class="btn-pay" onclick="openModal()">Continue to Pay</button>
+      </div>
+
+    </div>
+  </div>
+
+  {% else %}
+
+  <!-- Empty state -->
+  <div class="empty-state">
+    <div class="empty-icon">🛒</div>
+    <p>Your cart is empty</p>
+    <a href="/menu" class="btn-browse">Browse the Menu</a>
+  </div>
+
   {% endif %}
 
-  <h3>{{ item.name }}</h3>
-  <!-- <img src="{{ item.image }}" width="100"> -->
-  <p>Category: {{ item.category }}</p>
+</div><!-- /page -->
 
-  <p>₹{{ item.price }} x {{ item.quantity }}</p>
-
-  <!-- Quantity Controls -->
-  <a href="/update_quantity/{{item.id}}/inc">➕</a>
-  <a href="/update_quantity/{{item.id}}/dec">➖</a>
-
-  <!-- Remove -->
-  <a href="/remove_from_cart/{{item.id}}" style="color: red">❌ Remove</a>
-</div>
-{% endfor %}
-
-<hr />
-
-<hr />
-
-<hr />
-
-<h3>Apply Coupon</h3>
-
-<form method="POST" action="/apply_coupon">
-  <input type="text" name="coupon" placeholder="Enter coupon code" required />
-  <button>Apply</button>
-</form>
-<p><b>Available Coupons:</b></p>
-<ul>
-  <li>SAVE10 → 10% off</li>
-  <li>SAVE20 → 20% off</li>
-  <li>FLAT50 → ₹50 off</li>
-  <li>FLAT100 → ₹100 off</li>
-  <li>BIGSAVE → ₹100 off on ₹500+</li>
-</ul>
-{% if msg %}
-<p style="color: #dc2626; font-weight:bold;">{{msg}}</p>
-{% endif %}
-
-{% if coupon %}
-<p style="color: green">Applied: {{coupon}}</p>
-{% endif %}
-
-<hr />
-
-<p>Subtotal: ₹{{subtotal}}</p>
-
-{% if discount > 0 %}
-<p style="color: green">Discount: -₹{{discount}}</p>
-{% endif %}
-{% if coupon %}
-<p style="color:green;">
-  Applied: {{coupon}}
-  <a href="/remove_coupon" style="color:red; margin-left:10px;">❌ Remove</a>
-</p>
-{% endif %}
-
-
-<p>GST (5%): ₹{{gst}}</p>
-
-<h2>Total: ₹{{total}}</h2>
-
-
-<!-- <a href="/place_order"
-     
-   Place Order 🛍️
-</a> -->
-
-<button 
-style="
-    padding: 10px 15px;
-    background: #16a34a;
-    color: white;
-    border: none;
-    border-radius: 6px;"
-   onclick="openModal()">Continue to Pay 💳</button>
-
-{% else %}
-<p>Your cart is empty 😢</p>
-{% endif %}
-
-<br /><br />
-<a href="/menu">⬅ Back to Menu</a>
-
-<!-- model ui -->
- <!-- Overlay -->
-<div id="overlay" style="
-  display:none;
-  position:fixed;
-  top:0; left:0;
-  width:100%; height:100%;
-  background:rgba(0,0,0,0.7);
-  justify-content:center;
-  align-items:center;
-">
-
-  <!-- Modal Box -->
-  <div style="
-    background:white;
-    padding:20px;
-    border-radius:10px;
-    text-align:center;
-  ">
-
-    <h3>Enter Your Name</h3>
-
+<!-- ══════════════════════ MODAL (all logic preserved) -->
+<div id="overlay" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(10,8,6,0.85); justify-content:center; align-items:center; z-index:1000; backdrop-filter:blur(6px);">
+  <div class="modal">
+    <p class="modal-eyebrow">Almost there</p>
+    <h3>What's your name?</h3>
     <form action="/place_order" method="POST">
-      <input type="text" name="customer_name" placeholder="Your Name" required>
-      <br><br>
-      <button type="submit">Confirm Order ✅</button>
+      <input type="text" name="customer_name" placeholder="Enter your name" required class="modal-input">
+      <button type="submit" class="btn-confirm">Confirm Order</button>
     </form>
-
+    <button class="modal-cancel" onclick="document.getElementById('overlay').style.display='none'">Cancel</button>
   </div>
 </div>
 
 <script>
-function openModal(){
+function openModal() {
   document.getElementById("overlay").style.display = "flex";
 }
 </script>

@@ -402,6 +402,27 @@
       <span id="popup-msg"></span>
     </div>
 
+
+
+
+
+    <button
+      id="enableSound"
+      style="
+        position: fixed;
+        bottom: 20px;
+        right: 20px;
+        padding: 10px 15px;
+        background: #16a34a;
+        color: white;
+        border: none;
+        border-radius: 6px;
+        z-index: 2000;
+      "
+    >
+      🔊 Enable Sound
+    </button>
+
     <script>
       /* ── PARTICLE / EMBER CANVAS ── */
       const canvas = document.getElementById("bg-canvas");
@@ -477,7 +498,44 @@
       tick();
 
       /* ── RELOAD (kept from original) ── */
+      const enableSoundBtn = document.getElementById("enableSound");
+      let audioEnabled = false;
+      let pendingSpeech = null;
       let lastNotified = localStorage.getItem("lastNotifiedOrder");
+
+      function speak(msg) {
+        if (!window.speechSynthesis || !window.SpeechSynthesisUtterance) return;
+
+        const utterance = new SpeechSynthesisUtterance(msg);
+        utterance.lang = "en-IN";
+        utterance.rate = 1;
+        utterance.pitch = 1;
+        window.speechSynthesis.speak(utterance);
+      }
+
+      if (enableSoundBtn) {
+        if (!window.speechSynthesis || !window.SpeechSynthesisUtterance) {
+          enableSoundBtn.style.display = "none";
+        } else {
+          enableSoundBtn.addEventListener("click", () => {
+            audioEnabled = true;
+            enableSoundBtn.style.display = "none";
+            if (pendingSpeech) {
+              speak(pendingSpeech);
+              pendingSpeech = null;
+            }
+            speak("Voice announcements enabled.");
+          });
+        }
+      }
+
+      function notifySpeech(msg) {
+        if (audioEnabled) {
+          speak(msg);
+        } else {
+          pendingSpeech = msg;
+        }
+      }
 
       function checkLatest() {
         fetch("/latest_order_api")
@@ -490,10 +548,9 @@
               localStorage.setItem("lastNotifiedOrder", data.id);
               lastNotified = data.id; // ✅ THIS LINE FIXES IT
 
+              const announcement = `${data.name}, your order number ${data.id} is ready. Please collect from counter.`;
               showPopup(`${data.name}, your order #${data.id} is READY!`);
-
-              let audio = new Audio("/static/notify.mp3");
-              audio.play();
+              notifySpeech(announcement);
             }
           });
       }
@@ -519,19 +576,9 @@
     </script>
     {% if session.get('notify') %}
     <script>
-      showPopup("{{ session.get('notify') }}");
-
-      let audio = new Audio("/static/notify.mp3");
-      audio.play();
-      let audioUnlocked = false;
-
-      document.addEventListener("click", () => {
-        if (!audioUnlocked) {
-          let a = new Audio("/static/notify.mp3");
-          a.play().catch(() => {});
-          audioUnlocked = true;
-        }
-      });
+      const initialNotifyMessage = {{ session.get('notify')|tojson }};
+      showPopup(initialNotifyMessage);
+      notifySpeech(initialNotifyMessage);
     </script>
     {% set _ = session.pop('notify') %} {% endif %}
   </body>

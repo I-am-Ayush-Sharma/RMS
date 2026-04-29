@@ -584,6 +584,11 @@ def order_status(order_id):
 
     conn.close()
 
+    import json
+    if order:
+        order = list(order)
+        order[2] = json.loads(order[2])   # 🔥 items decode
+
     return render_template('order_status.html', order=order)
 
 @app.route('/order_status')
@@ -600,6 +605,11 @@ def check_order():
         order = cur.fetchone()
 
         conn.close()
+
+        import json
+        if order:
+            order = list(order)
+            order[2] = json.loads(order[2])   # 🔥 items decode
 
     return render_template('check_status.html', order=order)
 

@@ -7,14 +7,47 @@
 <p><b>Time:</b> {{order[4]}}</p>
 
 {% if order and order[5] == "Ready" %}
-  <h3 style="color:green;">🟢 Ready</h3>
+<h3 style="color: green">🟢 Ready</h3>
 {% elif order %}
-  <h3 style="color:orange;">🟡 Preparing</h3>
+<h3 style="color: orange">🟡 Preparing</h3>
 {% endif %}
 
 <p>Please note your Order ID and wait for your order.</p>
 
 <a href="/menu">🍽️ Order More</a>
+<div style="text-align: center; margin-top: 30px">
+  <a
+    href="/welcome"
+    style="
+      display: inline-block;
+      padding: 16px 40px;
+      font-size: 20px;
+      font-weight: bold;
+      background: #16a34a;
+      color: white;
+      border-radius: 10px;
+      text-decoration: none;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+      transition: 0.3s;
+      animation: pulse 1.5s infinite;
+      @keyframes pulse {
+        0% {
+          transform: scale(1);
+        }
+        50% {
+          transform: scale(1.05);
+        }
+        100% {
+          transform: scale(1);
+        }
+      }
+    "
+    onmouseover="this.style.background = '#15803d'"
+    onmouseout="this.style.background = '#16a34a'"
+  >
+    ⬅ Back to Home
+  </a>
+</div>
 <script>
   localStorage.removeItem("lastNotifiedOrder");
 </script>
