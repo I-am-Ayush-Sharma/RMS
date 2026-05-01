@@ -1,4 +1,18 @@
-<div id="orders-container"></div>
+<div style="display:flex; gap:20px; padding:20px;">
+
+  <!-- 🟡 Pending -->
+  <div style="flex:1;">
+    <h2 style="color:orange;">🟡 Pending Orders</h2>
+    <div id="pending"></div>
+  </div>
+
+  <!-- 🟢 Completed -->
+  <div style="flex:1;">
+    <h2 style="color:green;">🟢 Completed Orders</h2>
+    <div id="completed"></div>
+  </div>
+
+</div>
 
 <script>
 function refreshOrders(){
@@ -6,14 +20,16 @@ function refreshOrders(){
     .then(res => res.json())
     .then(data => {
 
-      let html = "";
+      let pendingHTML = "";
+      let completedHTML = "";
 
       data.orders.forEach(order => {
 
-        html += `
-        <div style="border:1px solid #ccc;padding:10px;margin-bottom:15px">
+        let card = `
+        <div style="border:1px solid #ccc;padding:10px;margin-bottom:15px;border-radius:8px;">
           <h3>Order #${order.id}</h3>
           <p><b>Name:</b> ${order.name}</p>
+          <p><b>Type:</b> ${order.order_type && order.order_type.toLowerCase().includes("dine") ? "Dine In" : "Take Away"}</p>
 
           <b>Items:</b>
           <ul>
@@ -23,20 +39,55 @@ function refreshOrders(){
           <p><b>Total:</b> ₹${order.total}</p>
           <p><b>Time:</b> ${order.time}</p>
           <p><b>Status:</b> ${order.status}</p>
-
-          ${
-            order.status !== "Ready"
-            ? `<a href="/mark_ready/${order.id}"><button>Mark Ready</button></a>`
-            : `<span style="color:green">✔ Ready</span>`
-          }
-        </div>
         `;
+
+        // 🔥 Split logic
+        if(order.status !== "Ready"){
+
+          card += `
+            <button onclick="markReady(${order.id})" style="background:green;color:white;padding:6px 12px;border:none;border-radius:5px;cursor:pointer;">
+              Mark Ready
+            </button>
+          </div>
+          `;
+
+          pendingHTML += card;
+
+        } else {
+
+          card += `
+            <p style="color:green;font-weight:bold;">✔ Completed</p>
+          </div>
+          `;
+
+          completedHTML += card;
+        }
+
       });
 
-      document.getElementById("orders-container").innerHTML = html;
+      document.getElementById("pending").innerHTML = pendingHTML || "<p>No pending orders</p>";
+      document.getElementById("completed").innerHTML = completedHTML || "<p>No completed orders</p>";
+
     });
 }
 
-setInterval(refreshOrders, 5000);
+function markReady(orderId) {
+  fetch(`/mark_ready/${orderId}`, {
+    method: 'POST'
+  })
+    .then(res => res.json())
+    .then(data => {
+      if (data.success) {
+        refreshOrders();
+      } else {
+        alert(data.error || 'Unable to update order status');
+      }
+    })
+    .catch(() => {
+      alert('Unable to update order status. Please try again.');
+    });
+}
+
+setInterval(refreshOrders, 3000);
 refreshOrders();
 </script>

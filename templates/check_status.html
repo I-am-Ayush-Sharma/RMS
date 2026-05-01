@@ -1,4 +1,4 @@
-<h2>🔍 Check Order Status</h2>
+<!-- <h2>🔍 Check Order Status</h2>
 
 <form method="GET" action="/order_status">
   <input type="number" name="order_id" placeholder="Enter Order ID" required />
@@ -36,4 +36,495 @@
   <button>⬅ Back</button>
 </a>
 
-{% endif %}
+{% endif %} -->
+
+
+
+
+
+
+
+
+<!-- order_status_check.html — La Maison · matches theme -->
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Jost:wght@200;300;400&display=swap" rel="stylesheet" />
+
+<style>
+  :root {
+    --gold:     #c9a84c;
+    --gold-lt:  #e8c97a;
+    --cream:    #f5efe4;
+    --ink:      #1a1612;
+    --charcoal: #231f1b;
+    --card-bg:  #211d19;
+    --muted:    #8a7f72;
+    --border:   rgba(201,168,76,0.15);
+    --green:    #4caf7d;
+    --orange:   #e8a74c;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--ink);
+    font-family: 'Jost', sans-serif;
+    color: var(--cream);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+  }
+
+  body::after {
+    content: '';
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E");
+    opacity: 0.04;
+    pointer-events: none;
+  }
+
+  /* ── NAV ── */
+  .top-nav {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 40px;
+    background: rgba(26,22,18,0.92);
+    border-bottom: 1px solid var(--border);
+    backdrop-filter: blur(16px);
+  }
+  .nav-brand {
+    font-family: 'Cormorant Garamond', serif;
+    font-style: italic;
+    font-size: 1.55rem;
+    font-weight: 300;
+    color: var(--gold-lt);
+    text-decoration: none;
+  }
+  .nav-home {
+    font-size: 0.72rem;
+    font-weight: 300;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--muted);
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: color 0.2s;
+  }
+  .nav-home:hover { color: var(--gold); }
+  .nav-home svg { width: 14px; height: 14px; stroke: currentColor; fill: none; }
+
+  /* ── PAGE ── */
+  .page {
+    position: relative;
+    z-index: 1;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 60px 24px 80px;
+    gap: 32px;
+  }
+
+  /* ── PAGE HEADER ── */
+  .page-header {
+    text-align: center;
+    animation: fadeUp 0.8s ease 0.1s both;
+  }
+  .page-eyebrow {
+    font-size: 0.68rem;
+    font-weight: 200;
+    letter-spacing: 0.35em;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin-bottom: 12px;
+  }
+  .page-header h1 {
+    font-family: 'Cormorant Garamond', serif;
+    font-weight: 300;
+    font-size: clamp(2.2rem, 5vw, 3.6rem);
+    color: var(--cream);
+    line-height: 1;
+  }
+  .page-header h1 em { font-style: italic; color: var(--gold-lt); }
+  .header-rule {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    margin-top: 18px;
+  }
+  .header-rule span {
+    display: block; width: 60px; height: 1px;
+    background: linear-gradient(90deg, transparent, var(--border));
+  }
+  .header-rule span:last-child { background: linear-gradient(90deg, var(--border), transparent); }
+  .header-rule i { display: block; width: 4px; height: 4px; background: var(--gold); transform: rotate(45deg); opacity: 0.6; }
+
+  /* ── SEARCH CARD ── */
+  .search-card {
+    width: 100%;
+    max-width: 480px;
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    padding: 36px 40px;
+    animation: fadeUp 0.8s ease 0.25s both;
+  }
+
+  .search-label {
+    display: block;
+    font-size: 0.68rem;
+    font-weight: 200;
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 12px;
+  }
+
+  .search-row {
+    display: flex;
+    gap: 10px;
+  }
+
+  #order_id {
+    flex: 1;
+    padding: 13px 16px;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid var(--border);
+    color: var(--cream);
+    font-family: 'Jost', sans-serif;
+    font-size: 0.9rem;
+    font-weight: 300;
+    letter-spacing: 0.08em;
+    outline: none;
+    transition: border-color 0.25s, background 0.25s;
+    -moz-appearance: textfield;
+  }
+  #order_id::-webkit-outer-spin-button,
+  #order_id::-webkit-inner-spin-button { -webkit-appearance: none; }
+  #order_id::placeholder { color: var(--muted); font-size: 0.82rem; }
+  #order_id:focus { border-color: var(--gold); background: rgba(201,168,76,0.04); }
+
+  .btn-check {
+    padding: 13px 26px;
+    background: var(--gold);
+    border: none;
+    color: var(--ink);
+    font-family: 'Jost', sans-serif;
+    font-size: 0.74rem;
+    font-weight: 300;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: background 0.25s;
+    white-space: nowrap;
+  }
+  .btn-check:hover { background: var(--gold-lt); }
+
+  .search-hint {
+    margin-top: 14px;
+    font-size: 0.72rem;
+    font-weight: 200;
+    color: var(--muted);
+    letter-spacing: 0.05em;
+    line-height: 1.6;
+  }
+
+  /* ── RESULT CARD ── */
+  .result-card {
+    width: 100%;
+    max-width: 480px;
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    overflow: hidden;
+    animation: fadeUp 0.7s ease both;
+  }
+
+  /* coloured top strip based on status */
+  .result-strip {
+    height: 3px;
+    width: 100%;
+  }
+  .result-strip.ready    { background: linear-gradient(90deg, var(--green), transparent); }
+  .result-strip.preparing { background: linear-gradient(90deg, var(--orange), transparent); }
+
+  .result-inner { padding: 32px 36px; }
+
+  .result-status {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 16px;
+    font-size: 0.7rem;
+    font-weight: 300;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    border: 1px solid;
+    margin-bottom: 24px;
+  }
+  .result-status.ready {
+    color: var(--green);
+    border-color: rgba(76,175,125,0.35);
+    background: rgba(76,175,125,0.06);
+  }
+  .result-status.preparing {
+    color: var(--orange);
+    border-color: rgba(232,167,76,0.35);
+    background: rgba(232,167,76,0.06);
+    animation: pulse 2s ease-in-out infinite;
+  }
+  .status-dot {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: currentColor;
+  }
+  .result-status.preparing .status-dot { animation: blink 1.2s ease-in-out infinite; }
+
+  .result-order-id {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.6rem;
+    font-weight: 400;
+    color: var(--gold-lt);
+    margin-bottom: 20px;
+    display: block;
+  }
+
+  /* meta rows */
+  .result-meta {
+    border: 1px solid var(--border);
+    margin-bottom: 20px;
+  }
+  .meta-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 11px 16px;
+    border-bottom: 1px solid var(--border);
+  }
+  .meta-row:last-child { border-bottom: none; }
+  .meta-label {
+    font-size: 0.67rem;
+    font-weight: 200;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+  .meta-value {
+    font-size: 0.83rem;
+    font-weight: 300;
+    color: var(--cream);
+    text-align: right;
+  }
+  .meta-value.gold { color: var(--gold); }
+
+  /* items list */
+  .items-title {
+    font-size: 0.67rem;
+    font-weight: 200;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 10px;
+  }
+
+  .items-list {
+    list-style: none;
+    border: 1px solid var(--border);
+    margin-bottom: 24px;
+  }
+  .items-list li {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 16px;
+    border-bottom: 1px solid var(--border);
+    font-size: 0.82rem;
+    font-weight: 300;
+    color: var(--cream);
+  }
+  .items-list li:last-child { border-bottom: none; }
+  .item-qty {
+    font-size: 0.72rem;
+    font-weight: 200;
+    color: var(--muted);
+    letter-spacing: 0.08em;
+  }
+
+  /* result actions */
+  .result-actions {
+    display: flex;
+    gap: 10px;
+  }
+  .btn-back {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    padding: 11px 22px;
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--muted);
+    font-family: 'Jost', sans-serif;
+    font-size: 0.72rem;
+    font-weight: 300;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    text-decoration: none;
+    transition: border-color 0.2s, color 0.2s;
+  }
+  .btn-back:hover { border-color: var(--gold); color: var(--gold); }
+  .btn-back svg { width: 13px; height: 13px; stroke: currentColor; fill: none; }
+
+  .btn-menu {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    padding: 11px 22px;
+    background: var(--gold);
+    border: none;
+    color: var(--ink);
+    font-family: 'Jost', sans-serif;
+    font-size: 0.72rem;
+    font-weight: 300;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    text-decoration: none;
+    transition: background 0.25s;
+  }
+  .btn-menu:hover { background: var(--gold-lt); }
+
+  /* ── ANIMATIONS ── */
+  @keyframes fadeUp {
+    from { transform: translateY(18px); opacity: 0; }
+    to   { transform: translateY(0);    opacity: 1; }
+  }
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50%       { opacity: 0.55; }
+  }
+  @keyframes blink {
+    0%, 100% { opacity: 1; }
+    50%       { opacity: 0.3; }
+  }
+</style>
+
+<!-- ══════════════════════ NAV -->
+<nav class="top-nav">
+  <a href="/" class="nav-brand">La Maison</a>
+  <a href="/welcome" class="nav-home">
+    <svg viewBox="0 0 16 16" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M10 3L5 8l5 5"/>
+    </svg>
+    Home
+  </a>
+</nav>
+
+<!-- ══════════════════════ PAGE -->
+<div class="page">
+
+  <!-- Header -->
+  <div class="page-header">
+    <p class="page-eyebrow">Live tracking</p>
+    <h1>Track your <em>Order</em></h1>
+    <div class="header-rule"><span></span><i></i><span></span></div>
+  </div>
+
+  <!-- Search form -->
+  <div class="search-card">
+    <label class="search-label" for="order_id">Enter your order ID</label>
+    <form method="GET" action="/order_status">
+      <div class="search-row">
+        <input type="number" id="order_id" name="order_id"
+               placeholder="e.g. 1042" required>
+        <button type="submit" class="btn-check">Track</button>
+      </div>
+    </form>
+    <p class="search-hint">Your Order ID was shown on the confirmation screen after placing your order.</p>
+  </div>
+
+  <!-- ── RESULT (shown only when order exists) -->
+  {% if order %}
+  <div class="result-card">
+
+    {% if order[5] == "Ready" %}
+    <div class="result-strip ready"></div>
+    {% else %}
+    <div class="result-strip preparing"></div>
+    {% endif %}
+
+    <div class="result-inner">
+
+      <!-- Status badge -->
+      {% if order[5] == "Ready" %}
+      <div class="result-status ready">
+        <span class="status-dot"></span>
+        Ready for pickup
+      </div>
+      {% else %}
+      <div class="result-status preparing">
+        <span class="status-dot"></span>
+        Preparing your order
+      </div>
+      {% endif %}
+
+      <span class="result-order-id">#{{ order[0] }}</span>
+
+      <!-- Meta -->
+      <div class="result-meta">
+        <div class="meta-row">
+          <span class="meta-label">Name</span>
+          <span class="meta-value">{{ order[1] }}</span>
+        </div>
+        <div class="meta-row">
+          <span class="meta-label">Total</span>
+          <span class="meta-value gold">₹{{ order[3] }}</span>
+        </div>
+        <div class="meta-row">
+          <span class="meta-label">Placed at</span>
+          <span class="meta-value">{{ order[4] }}</span>
+        </div>
+        <div class="meta-row">
+          <span class="meta-label">Type</span>
+          <span class="meta-value">
+            {% if order[6] == "Dine In" %}
+              Dine In
+            {% else %}
+              Take Away
+            {% endif %}
+          </span>
+        </div>
+      </div>
+
+      <!-- Items -->
+      <p class="items-title">Items ordered</p>
+      <ul class="items-list">
+        {% for item in order[2] %}
+        <li>
+          <span>{{ item.name }}</span>
+          <span class="item-qty">× {{ item.quantity }}</span>
+        </li>
+        {% endfor %}
+      </ul>
+
+      <!-- Actions -->
+      <div class="result-actions">
+        <a href="/order_status" class="btn-back">
+          <svg viewBox="0 0 16 16" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M10 3L5 8l5 5"/>
+          </svg>
+          Back
+        </a>
+        <a href="/menu" class="btn-menu">Order More</a>
+      </div>
+
+    </div>
+  </div>
+  {% endif %}
+
+</div>
+

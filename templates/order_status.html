@@ -1,4 +1,4 @@
-<h2>✅ Order Placed!</h2>
+<!-- <h2>✅ Order Placed!</h2>
 
 <h3>Your Order ID: #{{order[0]}}</h3>
 <p><b>Name:</b> {{ order[1] }}</p>
@@ -50,4 +50,372 @@
 </div>
 <script>
   localStorage.removeItem("lastNotifiedOrder");
+</script> -->
+
+
+
+<!-- order_status.html — La Maison · matches theme -->
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Jost:wght@200;300;400&display=swap" rel="stylesheet" />
+
+<style>
+  :root {
+    --gold:     #c9a84c;
+    --gold-lt:  #e8c97a;
+    --cream:    #f5efe4;
+    --ink:      #1a1612;
+    --charcoal: #231f1b;
+    --card-bg:  #211d19;
+    --muted:    #8a7f72;
+    --border:   rgba(201,168,76,0.15);
+    --green:    #4caf7d;
+    --orange:   #e8a74c;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--ink);
+    font-family: 'Jost', sans-serif;
+    color: var(--cream);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+  }
+
+  body::after {
+    content: '';
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E");
+    opacity: 0.04;
+    pointer-events: none;
+  }
+
+  /* ── NAV ── */
+  .top-nav {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 40px;
+    background: rgba(26,22,18,0.92);
+    border-bottom: 1px solid var(--border);
+    backdrop-filter: blur(16px);
+  }
+  .nav-brand {
+    font-family: 'Cormorant Garamond', serif;
+    font-style: italic;
+    font-size: 1.55rem;
+    font-weight: 300;
+    color: var(--gold-lt);
+    text-decoration: none;
+  }
+
+  /* ── PAGE ── */
+  .page {
+    position: relative;
+    z-index: 1;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 60px 24px 80px;
+  }
+
+  /* ── CONFIRMATION CARD ── */
+  .confirm-card {
+    width: 100%;
+    max-width: 520px;
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    padding: 48px 44px;
+    text-align: center;
+    animation: fadeUp 0.9s ease both;
+  }
+
+  /* checkmark animation */
+  .check-wrap {
+    width: 64px;
+    height: 64px;
+    border-radius: 50%;
+    background: rgba(76,175,125,0.1);
+    border: 1px solid rgba(76,175,125,0.35);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 24px;
+    animation: popIn 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275) 0.3s both;
+  }
+  .check-wrap svg {
+    width: 28px; height: 28px;
+    stroke: var(--green);
+    fill: none;
+    stroke-width: 2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    stroke-dasharray: 40;
+    stroke-dashoffset: 40;
+    animation: drawCheck 0.5s ease 0.7s forwards;
+  }
+
+  .confirm-eyebrow {
+    font-size: 0.68rem;
+    font-weight: 200;
+    letter-spacing: 0.35em;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin-bottom: 10px;
+  }
+
+  .confirm-card h1 {
+    font-family: 'Cormorant Garamond', serif;
+    font-weight: 300;
+    font-size: 2.4rem;
+    color: var(--cream);
+    line-height: 1.1;
+    margin-bottom: 6px;
+  }
+  .confirm-card h1 em { font-style: italic; color: var(--gold-lt); }
+
+  .confirm-divider {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    margin: 20px 0 28px;
+  }
+  .confirm-divider span {
+    display: block; width: 60px; height: 1px;
+    background: linear-gradient(90deg, transparent, var(--border));
+  }
+  .confirm-divider span:last-child { background: linear-gradient(90deg, var(--border), transparent); }
+  .confirm-divider i { display: block; width: 4px; height: 4px; background: var(--gold); transform: rotate(45deg); opacity: 0.6; }
+
+  /* order details */
+  .order-id {
+    display: inline-block;
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.5rem;
+    font-weight: 400;
+    color: var(--gold-lt);
+    letter-spacing: 0.04em;
+    margin-bottom: 24px;
+  }
+
+  .order-meta {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    margin-bottom: 28px;
+    border: 1px solid var(--border);
+  }
+  .meta-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 18px;
+    border-bottom: 1px solid var(--border);
+  }
+  .meta-row:last-child { border-bottom: none; }
+  .meta-label {
+    font-size: 0.68rem;
+    font-weight: 200;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+  .meta-value {
+    font-size: 0.85rem;
+    font-weight: 300;
+    color: var(--cream);
+    text-align: right;
+  }
+  .meta-value.gold { color: var(--gold); }
+
+  /* status badge */
+  .status-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 16px;
+    font-size: 0.72rem;
+    font-weight: 300;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    border: 1px solid;
+    margin-bottom: 28px;
+  }
+  .status-badge.ready {
+    color: var(--green);
+    border-color: rgba(76,175,125,0.35);
+    background: rgba(76,175,125,0.06);
+  }
+  .status-badge.preparing {
+    color: var(--orange);
+    border-color: rgba(232,167,76,0.35);
+    background: rgba(232,167,76,0.06);
+    animation: pulse 2s ease-in-out infinite;
+  }
+  .status-dot {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: currentColor;
+  }
+  .status-badge.preparing .status-dot { animation: blink 1.2s ease-in-out infinite; }
+
+  .confirm-note {
+    font-size: 0.75rem;
+    font-weight: 300;
+    letter-spacing: 0.06em;
+    color: var(--muted);
+    margin-bottom: 32px;
+    line-height: 1.7;
+  }
+
+  /* actions */
+  .confirm-actions {
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+
+  .btn-home {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 13px 28px;
+    background: var(--gold);
+    color: var(--ink);
+    font-family: 'Jost', sans-serif;
+    font-size: 0.74rem;
+    font-weight: 300;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    text-decoration: none;
+    border: none;
+    transition: background 0.25s;
+  }
+  .btn-home:hover { background: var(--gold-lt); }
+
+  .btn-more {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 13px 28px;
+    background: transparent;
+    color: var(--gold);
+    font-family: 'Jost', sans-serif;
+    font-size: 0.74rem;
+    font-weight: 300;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    text-decoration: none;
+    border: 1px solid rgba(201,168,76,0.35);
+    transition: background 0.25s, border-color 0.25s;
+  }
+  .btn-more:hover { background: rgba(201,168,76,0.07); border-color: var(--gold); }
+
+  /* ── ANIMATIONS ── */
+  @keyframes fadeUp {
+    from { transform: translateY(22px); opacity: 0; }
+    to   { transform: translateY(0);    opacity: 1; }
+  }
+  @keyframes popIn {
+    from { transform: scale(0.4); opacity: 0; }
+    to   { transform: scale(1);   opacity: 1; }
+  }
+  @keyframes drawCheck {
+    to { stroke-dashoffset: 0; }
+  }
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50%       { opacity: 0.55; }
+  }
+  @keyframes blink {
+    0%, 100% { opacity: 1; }
+    50%       { opacity: 0.3; }
+  }
+</style>
+
+<!-- ══════════════════════ NAV -->
+<nav class="top-nav">
+  <a href="/" class="nav-brand">La Maison</a>
+</nav>
+
+<!-- ══════════════════════ PAGE -->
+<div class="page">
+  <div class="confirm-card">
+
+    <!-- Animated check -->
+    <div class="check-wrap">
+      <svg viewBox="0 0 24 24"><polyline points="4 12 9 17 20 7"/></svg>
+    </div>
+
+    <p class="confirm-eyebrow">Thank you for your order</p>
+    <h1>Order <em>Placed!</em></h1>
+
+    <div class="confirm-divider"><span></span><i></i><span></span></div>
+
+    <div class="order-id">#{{ order[0] }}</div>
+
+    <!-- Order meta table -->
+    <div class="order-meta">
+      <div class="meta-row">
+        <span class="meta-label">Name</span>
+        <span class="meta-value">{{ order[1] }}</span>
+      </div>
+      <div class="meta-row">
+        <span class="meta-label">Total</span>
+        <span class="meta-value gold">₹{{ order[3] }}</span>
+      </div>
+      <div class="meta-row">
+        <span class="meta-label">Placed at</span>
+        <span class="meta-value">{{ order[4] }}</span>
+      </div>
+      <div class="meta-row">
+        <span class="meta-label">Type</span>
+        <span class="meta-value">
+          {% if order[6] == "Dine In" %}
+            Dine In
+          {% else %}
+            Take Away
+          {% endif %}
+        </span>
+      </div>
+    </div>
+
+    <!-- Status badge -->
+    {% if order and order[5] == "Ready" %}
+    <div class="status-badge ready">
+      <span class="status-dot"></span>
+      Ready for pickup
+    </div>
+    {% elif order %}
+    <div class="status-badge preparing">
+      <span class="status-dot"></span>
+      Preparing your order
+    </div>
+    {% endif %}
+
+    <p class="confirm-note">
+      Please note your Order ID and present it at the counter.<br>
+      You'll be notified as soon as your order is ready.
+    </p>
+
+    <div class="confirm-actions">
+      <a href="/welcome" class="btn-home">← Back to Home</a>
+      <a href="/menu" class="btn-more">Order More</a>
+    </div>
+
+  </div>
+</div>
+
+<script>
+  localStorage.removeItem("lastNotifiedOrder");
 </script>
+

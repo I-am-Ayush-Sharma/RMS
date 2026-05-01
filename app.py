@@ -72,10 +72,24 @@ def init_db():
     username TEXT,
     items TEXT,
     total REAL,
-    date TEXT,
-    status TEXT DEFAULT 'Preparing'
+    time TEXT,
+    status TEXT DEFAULT 'Preparing',
+    order_type TEXT DEFAULT 'Dine In'
     )   
     ''')
+
+    # Add order_type column if upgrading from older schema
+    cur.execute("PRAGMA table_info(orders)")
+    columns = [row[1] for row in cur.fetchall()]
+    if 'order_type' not in columns:
+        cur.execute("ALTER TABLE orders ADD COLUMN order_type TEXT DEFAULT 'Dine In'")
+
+    # Migration: rename 'date' to 'time' if exists
+    if 'date' in columns and 'time' not in columns:
+        cur.execute("ALTER TABLE orders ADD COLUMN time_temp TEXT")
+        cur.execute("UPDATE orders SET time_temp = date")
+        cur.execute("ALTER TABLE orders DROP COLUMN date")
+        cur.execute("ALTER TABLE orders RENAME COLUMN time_temp TO time")
 
     conn.commit()
     conn.close()
@@ -168,8 +182,12 @@ def chef_dashboard():
 
 
 #ready button route
-@app.route('/mark_ready/<int:order_id>')
+@app.route('/mark_ready/<int:order_id>', methods=['GET', 'POST'])
 def mark_ready(order_id):
+    if not session.get('chef'):
+        if request.method == 'POST':
+            return {"success": False, "error": "Access Denied"}, 403
+        return redirect('/login')
 
     conn = sqlite3.connect('database.db')
     cur = conn.cursor()
@@ -183,8 +201,11 @@ def mark_ready(order_id):
 
     conn.close()
 
-    # 🔥 SET NOTIFICATION
-    session['notify'] = f"{user[0]}, your order #{order_id} is READY!"
+    if user:
+        session['notify'] = f"{user[0]}, your order #{order_id} is READY!"
+
+    if request.method == 'POST':
+        return {"success": True, "order_id": order_id, "status": "Ready"}
 
     return redirect('/chef')
 
@@ -545,14 +566,17 @@ def place_order():
     conn = sqlite3.connect('database.db')
     cur = conn.cursor()
 
+    order_type = session.get('order_type', 'Dine In')
+
     cur.execute(
-    "INSERT INTO orders (username, items, total, date, status) VALUES (?, ?, ?, ?, ?)",
+    "INSERT INTO orders (username, items, total, time, status, order_type) VALUES (?, ?, ?, ?, ?, ?)",
     (
         customer_name or "Customer",
         json.dumps(cart),
         total,
         datetime.now().strftime("%Y-%m-%d %H:%M"),
-        "Preparing"
+        "Preparing",
+        order_type
         )
     )
     order_id = cur.lastrowid   # 🔥 KEY POINT
@@ -587,6 +611,8 @@ def order_status(order_id):
     import json
     if order:
         order = list(order)
+        if len(order) == 6:
+            order.append('Dine In')
         order[2] = json.loads(order[2])   # 🔥 items decode
 
     return render_template('order_status.html', order=order)
@@ -609,10 +635,11 @@ def check_order():
         import json
         if order:
             order = list(order)
+            if len(order) == 6:
+                order.append('Dine In')
             order[2] = json.loads(order[2])   # 🔥 items decode
 
     return render_template('check_status.html', order=order)
-
 
 
 #admin view orders route
@@ -641,7 +668,8 @@ def admin_orders():
             "items": json.loads(order[2]),
             "total": order[3],
             "time": order[4],
-            "status": order[5]
+            "status": order[5],
+            "order_type": order[6] if len(order) > 6 else 'Dine In'
         })
 
     return render_template('admin_orders.html', orders=decoded_orders)
@@ -692,7 +720,8 @@ def chef_orders_api():
             "items": json.loads(row[2]),   # ✅ correct
             "total": row[3],               # ✅ correct
             "time": row[4],                # ✅ correct
-            "status": row[5]               # ✅ correct
+            "status": row[5],              # ✅ correct
+            "order_type": row[6] if len(row) > 6 else "Dine In"
         })
 
     return {"orders": orders}
@@ -719,6 +748,21 @@ def latest_order_api():
         }
 
     return {}
+
+
+#order type selection route
+@app.route('/order_type')
+def order_type():
+    return render_template('order_type.html')
+
+@app.route('/set_order_type/<type>')
+def set_order_type(type):
+    # Normalize to proper format
+    if type.lower() in ['dinein', 'dine in']:
+        session['order_type'] = 'Dine In'
+    else:
+        session['order_type'] = 'Take Away'
+    return redirect('/menu')
 
 
 

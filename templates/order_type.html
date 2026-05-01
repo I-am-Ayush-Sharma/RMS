@@ -1,0 +1,301 @@
+<!-- order_type.html — La Maison · matches theme -->
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Jost:wght@200;300;400&display=swap" rel="stylesheet" />
+
+<style>
+  :root {
+    --gold:     #c9a84c;
+    --gold-lt:  #e8c97a;
+    --cream:    #f5efe4;
+    --ink:      #1a1612;
+    --charcoal: #231f1b;
+    --card-bg:  #211d19;
+    --muted:    #8a7f72;
+    --border:   rgba(201,168,76,0.15);
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--ink);
+    font-family: 'Jost', sans-serif;
+    color: var(--cream);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+  }
+
+  body::after {
+    content: '';
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E");
+    opacity: 0.04;
+    pointer-events: none;
+  }
+
+  /* ── NAV ── */
+  .top-nav {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 40px;
+    background: rgba(26,22,18,0.92);
+    border-bottom: 1px solid var(--border);
+    backdrop-filter: blur(16px);
+  }
+  .nav-brand {
+    font-family: 'Cormorant Garamond', serif;
+    font-style: italic;
+    font-size: 1.55rem;
+    font-weight: 300;
+    color: var(--gold-lt);
+    text-decoration: none;
+  }
+
+  /* ── PAGE ── */
+  .page {
+    position: relative;
+    z-index: 1;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 60px 24px 80px;
+    gap: 48px;
+  }
+
+  /* ── HEADER ── */
+  .page-header {
+    text-align: center;
+    animation: fadeUp 0.8s ease 0.1s both;
+  }
+  .page-eyebrow {
+    font-size: 0.68rem;
+    font-weight: 200;
+    letter-spacing: 0.35em;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin-bottom: 12px;
+  }
+  .page-header h1 {
+    font-family: 'Cormorant Garamond', serif;
+    font-weight: 300;
+    font-size: clamp(2.4rem, 5vw, 3.8rem);
+    color: var(--cream);
+    line-height: 1;
+  }
+  .page-header h1 em { font-style: italic; color: var(--gold-lt); }
+  .header-rule {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    margin-top: 18px;
+  }
+  .header-rule span {
+    display: block; width: 60px; height: 1px;
+    background: linear-gradient(90deg, transparent, var(--border));
+  }
+  .header-rule span:last-child { background: linear-gradient(90deg, var(--border), transparent); }
+  .header-rule i { display: block; width: 4px; height: 4px; background: var(--gold); transform: rotate(45deg); opacity: 0.6; }
+
+  /* ── CHOICE CARDS ── */
+  .choices {
+    display: flex;
+    gap: 24px;
+    flex-wrap: wrap;
+    justify-content: center;
+    animation: fadeUp 0.8s ease 0.3s both;
+  }
+
+  .choice-card {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 18px;
+    width: 220px;
+    padding: 44px 28px;
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    text-decoration: none;
+    color: var(--cream);
+    overflow: hidden;
+    transition: border-color 0.35s, transform 0.35s, box-shadow 0.35s;
+  }
+  .choice-card::before {
+    content: '';
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    height: 2px;
+    background: var(--gold);
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform 0.4s cubic-bezier(0.4,0,0.2,1);
+  }
+  .choice-card:hover {
+    border-color: rgba(201,168,76,0.5);
+    transform: translateY(-6px);
+    box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+  }
+  .choice-card:hover::before { transform: scaleX(1); }
+
+  .choice-icon {
+    width: 64px;
+    height: 64px;
+    border-radius: 50%;
+    background: rgba(201,168,76,0.07);
+    border: 1px solid rgba(201,168,76,0.2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.8rem;
+    transition: background 0.3s, border-color 0.3s;
+  }
+  .choice-card:hover .choice-icon {
+    background: rgba(201,168,76,0.14);
+    border-color: rgba(201,168,76,0.45);
+  }
+
+  .choice-label {
+    font-family: 'Cormorant Garamond', serif;
+    font-weight: 400;
+    font-size: 1.35rem;
+    color: var(--cream);
+    letter-spacing: 0.02em;
+    transition: color 0.25s;
+  }
+  .choice-card:hover .choice-label { color: var(--gold-lt); }
+
+  .choice-desc {
+    font-size: 0.72rem;
+    font-weight: 200;
+    letter-spacing: 0.06em;
+    color: var(--muted);
+    text-align: center;
+    line-height: 1.6;
+    transition: color 0.25s;
+  }
+
+  .choice-arrow {
+    margin-top: 4px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.68rem;
+    font-weight: 300;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--gold);
+    opacity: 0;
+    transform: translateY(6px);
+    transition: opacity 0.3s, transform 0.3s;
+  }
+  .choice-arrow svg { width: 13px; height: 13px; stroke: currentColor; fill: none; }
+  .choice-card:hover .choice-arrow { opacity: 1; transform: translateY(0); }
+
+  /* vertical separator */
+  .or-divider {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    animation: fadeUp 0.8s ease 0.4s both;
+  }
+  @media (max-width: 560px) {
+    .choices { flex-direction: column; align-items: center; }
+    .or-divider { flex-direction: row; }
+    .or-divider .or-line { width: 40px; height: 1px; }
+  }
+  .or-line {
+    width: 1px;
+    height: 50px;
+    background: linear-gradient(to bottom, transparent, var(--border), transparent);
+  }
+  .or-text {
+    font-size: 0.65rem;
+    font-weight: 200;
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+
+  /* ── FOOTER NOTE ── */
+  .footer-note {
+    font-size: 0.72rem;
+    font-weight: 200;
+    letter-spacing: 0.1em;
+    color: var(--muted);
+    text-align: center;
+    animation: fadeUp 0.8s ease 0.5s both;
+  }
+
+  /* ── ANIMATIONS ── */
+  @keyframes fadeUp {
+    from { transform: translateY(18px); opacity: 0; }
+    to   { transform: translateY(0);    opacity: 1; }
+  }
+</style>
+
+<!-- ══════════════════════ NAV -->
+<nav class="top-nav">
+  <a href="/" class="nav-brand">La Maison</a>
+</nav>
+
+<!-- ══════════════════════ PAGE -->
+<div class="page">
+
+  <!-- Header -->
+  <div class="page-header">
+    <p class="page-eyebrow">Welcome</p>
+    <h1>How will you <em>dine</em> today?</h1>
+    <div class="header-rule"><span></span><i></i><span></span></div>
+  </div>
+
+  <!-- Choices -->
+  <div style="display:flex; align-items:center; gap:0; flex-wrap:wrap; justify-content:center;">
+
+    <!-- Dine In -->
+    <a href="/set_order_type/dinein" class="choice-card">
+      <div class="choice-icon">🍽️</div>
+      <div class="choice-label">Dine In</div>
+      <div class="choice-desc">Enjoy your meal at our table in a relaxed setting</div>
+      <div class="choice-arrow">
+        Select
+        <svg viewBox="0 0 16 16" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M3 8h10M9 4l4 4-4 4"/>
+        </svg>
+      </div>
+    </a>
+
+    <!-- OR divider -->
+    <div class="or-divider" style="padding: 0 20px;">
+      <div class="or-line"></div>
+      <span class="or-text">or</span>
+      <div class="or-line"></div>
+    </div>
+
+    <!-- Take Away -->
+    <a href="/set_order_type/takeaway" class="choice-card">
+      <div class="choice-icon">🥡</div>
+      <div class="choice-label">Take Away</div>
+      <div class="choice-desc">Pack your order and enjoy it wherever you like</div>
+      <div class="choice-arrow">
+        Select
+        <svg viewBox="0 0 16 16" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M3 8h10M9 4l4 4-4 4"/>
+        </svg>
+      </div>
+    </a>
+
+  </div>
+
+  <p class="footer-note">Your choice helps us prepare and serve you better.</p>
+
+</div>

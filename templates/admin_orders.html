@@ -16,16 +16,7 @@
 
   <p><b>Total:</b> ₹{{ order["total"] }}</p>
   <p><b>Time:</b> {{ order["time"] }}</p>
-
-  <p>
-    <b>Status:</b>
-    {% if order["status"] == "Ready" %}
-      <span style="color:green;">✔ Ready</span>
-    {% else %}
-      <span style="color:orange;">Preparing</span>
-    {% endif %}
-  </p>
-
+  <p><b>Type:</b> {{ order["order_type"] }}</p>
 </div>
 
 {% endfor %}
