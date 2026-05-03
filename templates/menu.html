@@ -100,6 +100,21 @@
   }
   .btn-logout:hover { color: var(--gold); border-color: var(--gold); }
 
+  /* cart */
+  .btn-cart {
+    font-family: 'Jost', sans-serif;
+    font-weight: 300;
+    font-size: 0.72rem;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    text-decoration: none;
+    color: var(--muted);
+    padding: 9px 0;
+    border-bottom: 1px solid transparent;
+    transition: color 0.2s, border-color 0.2s;
+  }
+  .btn-cart:hover { color: var(--gold); border-color: var(--gold); }
+
   /* ── PAGE WRAPPER ── */
   .page {
     position: relative;
@@ -478,10 +493,10 @@
 <nav class="top-nav">
   <a href="/" class="nav-brand">La Maison</a>
   <div class="nav-right">
-    {% if session['role'] == 'admin' %}
+    {% if is_admin_view %}
     <a href="/add_menu" class="btn-add">＋ Add Item</a>
     {% endif %}
-    <a href="/logout" class="btn-logout">Logout</a>
+    <a href="/cart" class="btn-cart">Your Cart</a>
   </div>
 </nav>
 
@@ -556,7 +571,7 @@
           {% if item[5] %}<div class="item-desc">{{ item[5] }}</div>{% endif %}
 
           <div class="item-actions">
-            {% if session['role'] == 'admin' %}
+            {% if is_admin_view %}
               <a href="/edit_menu/{{item[0]}}" class="btn-admin" title="Edit">✏</a>
               <a href="/delete_menu/{{item[0]}}" class="btn-admin del" title="Delete"
                  onclick="return confirm('Delete this item?')">✕</a>
@@ -790,7 +805,7 @@
     </select>
   </div>
 
-  {% if session.get('admin') %}
+  {% if is_admin_view %}
   <a href="/add_menu" class="btn">➕ Add Item</a>
   {% endif %}
 </div>
@@ -829,7 +844,7 @@
     <p>{{ item[5] }}</p>
     {% endif %}
 
-    {% if session.get('admin') %}
+    {% if is_admin_view %}
       <a href="/edit_menu/{{item[0]}}">✏️</a>
       <a href="/delete_menu/{{item[0]}}" onclick="return confirm('Delete?')">❌</a>
     {% else %}

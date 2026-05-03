@@ -244,7 +244,7 @@ def add_menu():
         conn.commit()
         conn.close()
 
-        return redirect('/menu')
+        return redirect('/menu?admin_view=true')
 
     # 👇 GET request → show add page
     cur.execute("SELECT * FROM categories")
@@ -276,7 +276,10 @@ def menu():
 
     conn.close()
 
-    return render_template('menu.html', items=items, categories=categories)
+    # Check if this is an admin view (from admin dashboard)
+    is_admin_view = request.args.get('admin_view') == 'true'
+
+    return render_template('menu.html', items=items, categories=categories, is_admin_view=is_admin_view)
 
 
 
@@ -296,7 +299,7 @@ def delete_menu(id):
     conn.commit()
     conn.close()
 
-    return redirect('/menu')
+    return redirect('/menu?admin_view=true')
 
 #edit menu item route
 @app.route('/edit_menu/<int:id>', methods=['GET', 'POST'])
@@ -337,7 +340,7 @@ def edit_menu(id):
         conn.commit()
         conn.close()
 
-        return redirect('/menu')
+        return redirect('/menu?admin_view=true')
 
     # GET request
     cur.execute("SELECT * FROM menu WHERE id=?", (id,))
@@ -762,6 +765,11 @@ def set_order_type(type):
         session['order_type'] = 'Dine In'
     else:
         session['order_type'] = 'Take Away'
+
+    # 🔥 clear old cart only when arriving from the welcome page flow
+    session.pop('cart', None)
+    session.pop('coupon', None)
+
     return redirect('/menu')
 
 

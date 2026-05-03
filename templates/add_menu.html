@@ -1,25 +1,174 @@
-<h2>Add Menu Item</h2>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<form method="POST" enctype="multipart/form-data">
-  Name: <input type="text" name="name" required><br><br>
+<title>Add Menu Item</title>
 
-  Category:
-  <select name="category">
-    {% for cat in categories %}
-      <option value="{{cat[0]}}">{{cat[1]}}</option>
-    {% endfor %}
-  </select><br><br>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
 
-  Price: <input type="number" name="price" required><br><br>
+<style>
+:root{
+  --primary:#6C63FF;
+  --bg:#F5F6FA;
+  --card:#FFFFFF;
+  --text:#1E1E2F;
+  --subtext:#6B6B7A;
+  --border:#E6E6EF;
+}
 
-  Description:
-  <input type="text" name="description"><br><br>
+*{
+  margin:0;
+  padding:0;
+  box-sizing:border-box;
+  font-family:'Inter', sans-serif;
+}
 
-  Image:
-  <input type="file" name="image"><br><br>
+body{
+  background:var(--bg);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  min-height:100vh;
+}
 
-  <button>Add</button>
-</form>
+/* Card */
+.form-card{
+  width:100%;
+  max-width:420px;
+  background:var(--card);
+  padding:25px;
+  border-radius:16px;
+  border:1px solid var(--border);
+  box-shadow:0 10px 30px rgba(0,0,0,0.05);
+}
 
-<br>
-<a href="/menu">⬅ Back to Menu</a>
+.form-card h2{
+  margin-bottom:5px;
+}
+
+.subtitle{
+  font-size:13px;
+  color:var(--subtext);
+  margin-bottom:20px;
+}
+
+/* Inputs */
+.input-group{
+  margin-bottom:15px;
+}
+
+label{
+  font-size:13px;
+  font-weight:500;
+  display:block;
+  margin-bottom:5px;
+}
+
+input, select{
+  width:100%;
+  padding:10px;
+  border-radius:8px;
+  border:1px solid var(--border);
+  font-size:14px;
+}
+
+input:focus, select:focus{
+  outline:none;
+  border-color:var(--primary);
+}
+
+/* File input */
+.file-input{
+  border:1px dashed var(--border);
+  padding:15px;
+  text-align:center;
+  border-radius:10px;
+  cursor:pointer;
+  font-size:13px;
+  color:var(--subtext);
+}
+
+/* Button */
+button{
+  width:100%;
+  padding:12px;
+  background:var(--primary);
+  color:white;
+  border:none;
+  border-radius:10px;
+  font-size:15px;
+  cursor:pointer;
+  margin-top:10px;
+  transition:0.2s;
+}
+
+button:hover{
+  background:#574fd6;
+}
+
+/* Back link */
+.back{
+  display:block;
+  text-align:center;
+  margin-top:15px;
+  font-size:13px;
+  color:var(--subtext);
+  text-decoration:none;
+}
+
+.back:hover{
+  color:var(--primary);
+}
+</style>
+</head>
+
+<body>
+
+<div class="form-card">
+
+  <h2>Add Menu Item</h2>
+  <p class="subtitle">Create a new food item for your menu</p>
+
+  <form method="POST" enctype="multipart/form-data">
+
+    <div class="input-group">
+      <label>Item Name</label>
+      <input type="text" name="name" required>
+    </div>
+
+    <div class="input-group">
+      <label>Category</label>
+      <select name="category">
+        {% for cat in categories %}
+          <option value="{{cat[0]}}">{{cat[1]}}</option>
+        {% endfor %}
+      </select>
+    </div>
+
+    <div class="input-group">
+      <label>Price (₹)</label>
+      <input type="number" name="price" required>
+    </div>
+
+    <div class="input-group">
+      <label>Description</label>
+      <input type="text" name="description">
+    </div>
+
+    <div class="input-group">
+      <label>Upload Image</label>
+      <input type="file" name="image">
+    </div>
+
+    <button type="submit">➕ Add Item</button>
+
+  </form>
+
+  <a href="/menu" class="back">⬅️ Back to Menu</a>
+
+</div>
+
+</body>
+</html>

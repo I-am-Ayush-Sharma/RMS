@@ -1,22 +1,879 @@
-<h2>📊 All Orders (Admin)</h2>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Admin — All Orders</title>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;1,400&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-{% for order in orders %}
+    :root {
+      --bg:         #F0F1F7;
+      --surface:    #FFFFFF;
+      --surface2:   #F7F7FB;
+      --surface3:   #EDEDF5;
+      --border:     #E2E2EE;
+      --border2:    #CDCDE0;
+      --text:       #17171F;
+      --text-2:     #50505F;
+      --text-3:     #92929F;
+      --accent:     #4A42C8;
+      --accent-bg:  #EEEDFD;
+      --accent-mid: #C5C2F5;
+      --green:      #0C6E50;
+      --green-bg:   #E2F5EE;
+      --amber:      #8A5500;
+      --amber-bg:   #FEF3DC;
+      --coral:      #A03020;
+      --coral-bg:   #FAECE7;
+      --radius-lg:  16px;
+      --radius-md:  10px;
+      --radius-sm:  6px;
+      --shadow:     0 1px 3px rgba(0,0,0,0.06), 0 8px 24px rgba(0,0,0,0.07);
+      --shadow-sm:  0 1px 2px rgba(0,0,0,0.05), 0 2px 8px rgba(0,0,0,0.05);
+    }
 
-<div style="border:1px solid #ccc; padding:10px; margin-bottom:15px;">
+    body {
+      background: var(--bg);
+      background-image: radial-gradient(circle, #CACAD8 1px, transparent 1px);
+      background-size: 22px 22px;
+      font-family: 'DM Sans', sans-serif;
+      color: var(--text);
+      min-height: 100vh;
+    }
 
-  <h3>Order #{{ order["id"] }}</h3>
-  <p><b>Name:</b> {{ order.name }}</p>
+    /* ── TOPBAR ─────────────────────────────────────────── */
+    .topbar {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: rgba(255,255,255,0.85);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      border-bottom: 1px solid var(--border);
+      padding: 0 28px;
+      height: 58px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
 
-  <b>Items:</b>
-  <ul>
-    {% for item in order["items"] %}
-      <li>{{ item["name"] }} x {{ item["quantity"] }}</li>
-    {% endfor %}
-  </ul>
+    .topbar-left {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
 
-  <p><b>Total:</b> ₹{{ order["total"] }}</p>
-  <p><b>Time:</b> {{ order["time"] }}</p>
-  <p><b>Type:</b> {{ order["order_type"] }}</p>
-</div>
+    .back-btn {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--text-2);
+      text-decoration: none;
+      padding: 5px 10px 5px 6px;
+      border-radius: var(--radius-sm);
+      border: 1px solid transparent;
+      transition: border-color 0.15s, background 0.15s, color 0.15s;
+    }
+    .back-btn:hover { border-color: var(--border2); background: var(--surface2); color: var(--text); }
+    .back-btn svg { width: 14px; height: 14px; }
 
-{% endfor %}
+    .topbar-divider { width: 1px; height: 18px; background: var(--border); }
+
+    .topbar-title {
+      font-family: 'Playfair Display', serif;
+      font-size: 18px;
+      font-weight: 400;
+      color: var(--text);
+      letter-spacing: -0.2px;
+    }
+
+    .topbar-right {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .topbar-clock {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px;
+      color: var(--text-3);
+    }
+
+    .export-btn {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: 0.04em;
+      color: var(--accent);
+      background: var(--accent-bg);
+      border: 1px solid var(--accent-mid);
+      padding: 6px 14px;
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      transition: background 0.15s, transform 0.1s;
+      text-decoration: none;
+    }
+    .export-btn:hover { background: #E0DEFC; }
+    .export-btn:active { transform: scale(0.97); }
+    .export-btn svg { width: 13px; height: 13px; }
+
+    /* ── PAGE BODY ──────────────────────────────────────── */
+    .page { max-width: 1100px; margin: 0 auto; padding: 32px 24px 60px; }
+
+    /* ── PAGE HEADING ───────────────────────────────────── */
+    .page-heading {
+      margin-bottom: 28px;
+      opacity: 0;
+      animation: fadeUp 0.4s ease 0.05s forwards;
+    }
+
+    .page-heading h1 {
+      font-family: 'Playfair Display', serif;
+      font-size: 32px;
+      font-weight: 600;
+      letter-spacing: -0.5px;
+      line-height: 1.2;
+      color: var(--text);
+    }
+
+    .page-heading h1 em { font-style: italic; color: var(--accent); }
+
+    .page-heading p {
+      font-size: 14px;
+      color: var(--text-3);
+      margin-top: 5px;
+    }
+
+    /* ── KPI CARDS ──────────────────────────────────────── */
+    .kpi-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 14px;
+      margin-bottom: 24px;
+      opacity: 0;
+      animation: fadeUp 0.4s ease 0.15s forwards;
+    }
+
+    .kpi-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 18px 20px;
+      box-shadow: var(--shadow-sm);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .kpi-card::after {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 3px;
+      border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+    }
+
+    .kpi-card.accent::after  { background: var(--accent); }
+    .kpi-card.green::after   { background: var(--green); }
+    .kpi-card.amber::after   { background: #D4860A; }
+    .kpi-card.coral::after   { background: var(--coral); }
+
+    .kpi-label {
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--text-3);
+      margin-bottom: 8px;
+    }
+
+    .kpi-value {
+      font-family: 'Playfair Display', serif;
+      font-size: 28px;
+      font-weight: 600;
+      color: var(--text);
+      letter-spacing: -0.5px;
+    }
+
+    .kpi-sub {
+      font-size: 12px;
+      color: var(--text-3);
+      margin-top: 4px;
+    }
+
+    /* ── TOOLBAR ────────────────────────────────────────── */
+    .toolbar {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 18px;
+      flex-wrap: wrap;
+      opacity: 0;
+      animation: fadeUp 0.4s ease 0.25s forwards;
+    }
+
+    /* Search */
+    .search-wrap {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      padding: 0 14px;
+      height: 38px;
+      flex: 1;
+      min-width: 200px;
+      max-width: 340px;
+      transition: border-color 0.15s, box-shadow 0.15s;
+    }
+
+    .search-wrap:focus-within {
+      border-color: var(--accent-mid);
+      box-shadow: 0 0 0 3px rgba(74,66,200,0.08);
+    }
+
+    .search-wrap svg { width: 14px; height: 14px; color: var(--text-3); flex-shrink: 0; }
+
+    .search-wrap input {
+      border: none;
+      outline: none;
+      background: transparent;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 13px;
+      color: var(--text);
+      width: 100%;
+    }
+
+    .search-wrap input::placeholder { color: var(--text-3); }
+
+    /* Filter pills */
+    .filter-group {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      padding: 3px;
+    }
+
+    .filter-pill {
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--text-2);
+      padding: 5px 12px;
+      border-radius: 7px;
+      cursor: pointer;
+      border: none;
+      background: transparent;
+      transition: background 0.15s, color 0.15s;
+      font-family: 'DM Sans', sans-serif;
+    }
+
+    .filter-pill:hover { background: var(--surface3); color: var(--text); }
+
+    .filter-pill.active {
+      background: var(--accent);
+      color: #fff;
+    }
+
+    /* Type filter */
+    .type-select {
+      height: 38px;
+      padding: 0 12px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      background: var(--surface);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 13px;
+      color: var(--text-2);
+      cursor: pointer;
+      outline: none;
+      appearance: none;
+      -webkit-appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg width='10' height='6' viewBox='0 0 10 6' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%2392929F' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 10px center;
+      padding-right: 28px;
+      transition: border-color 0.15s;
+    }
+    .type-select:focus { border-color: var(--accent-mid); }
+
+    .result-count {
+      margin-left: auto;
+      font-size: 12px;
+      color: var(--text-3);
+      white-space: nowrap;
+    }
+
+    /* ── ORDERS TABLE / CARDS ───────────────────────────── */
+    .orders-wrap {
+      opacity: 0;
+      animation: fadeUp 0.4s ease 0.35s forwards;
+    }
+
+    .orders-table {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-sm);
+      overflow: hidden;
+    }
+
+    .table-head {
+      display: grid;
+      grid-template-columns: 80px 1fr 1fr 90px 100px 90px;
+      padding: 11px 20px;
+      background: var(--surface2);
+      border-bottom: 1px solid var(--border);
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.09em;
+      text-transform: uppercase;
+      color: var(--text-3);
+      gap: 12px;
+    }
+
+    .order-row {
+      display: grid;
+      grid-template-columns: 80px 1fr 1fr 90px 100px 90px;
+      padding: 0 20px;
+      gap: 12px;
+      border-bottom: 1px solid var(--border);
+      transition: background 0.12s;
+      cursor: pointer;
+      align-items: center;
+      min-height: 54px;
+    }
+
+    .order-row:last-child { border-bottom: none; }
+    .order-row:hover { background: var(--surface2); }
+
+    /* Expanded detail row */
+    .order-detail {
+      display: none;
+      padding: 0 20px 16px 20px;
+      border-bottom: 1px solid var(--border);
+      background: var(--surface2);
+    }
+
+    .order-detail.open { display: block; }
+
+    .detail-inner {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      padding: 14px 18px;
+      display: flex;
+      gap: 32px;
+      flex-wrap: wrap;
+    }
+
+    .detail-section { flex: 1; min-width: 160px; }
+
+    .detail-label {
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--text-3);
+      margin-bottom: 8px;
+    }
+
+    .detail-items { display: flex; flex-direction: column; gap: 4px; }
+
+    .detail-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 13px;
+      color: var(--text-2);
+    }
+
+    .detail-item-qty {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      color: var(--text-3);
+      background: var(--surface3);
+      padding: 1px 7px;
+      border-radius: 4px;
+      border: 1px solid var(--border);
+    }
+
+    /* Table cell styles */
+    .cell-id {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--accent);
+    }
+
+    .cell-name { font-size: 13px; font-weight: 500; color: var(--text); }
+    .cell-items { font-size: 12px; color: var(--text-2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .cell-total { font-family: 'JetBrains Mono', monospace; font-size: 13px; font-weight: 500; color: var(--text); }
+    .cell-time { font-size: 12px; color: var(--text-3); }
+
+    .type-badge {
+      display: inline-flex;
+      align-items: center;
+      font-size: 11px;
+      font-weight: 600;
+      padding: 3px 9px;
+      border-radius: 4px;
+      letter-spacing: 0.04em;
+    }
+
+    .type-badge.dine    { background: #E3F0FA; color: #1A6096; border: 1px solid #BDD9F0; }
+    .type-badge.takeaway { background: var(--amber-bg); color: var(--amber); border: 1px solid #F0D898; }
+
+    /* Empty / no results */
+    .empty-state {
+      text-align: center;
+      padding: 60px 20px;
+      color: var(--text-3);
+    }
+
+    .empty-state .big { font-size: 28px; margin-bottom: 10px; }
+    .empty-state p { font-size: 14px; }
+
+    /* ── REVENUE BANNER ─────────────────────────────────── */
+    .revenue-banner {
+      background: var(--accent);
+      border-radius: var(--radius-lg);
+      padding: 20px 28px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 24px;
+      box-shadow: 0 4px 20px rgba(74,66,200,0.25);
+      opacity: 0;
+      animation: fadeUp 0.4s ease 0.2s forwards;
+    }
+
+    .rev-left { display: flex; flex-direction: column; gap: 3px; }
+
+    .rev-label {
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: rgba(255,255,255,0.6);
+    }
+
+    .rev-value {
+      font-family: 'Playfair Display', serif;
+      font-size: 36px;
+      font-weight: 600;
+      color: #fff;
+      letter-spacing: -1px;
+    }
+
+    .rev-sub { font-size: 13px; color: rgba(255,255,255,0.55); }
+
+    .rev-right {
+      display: flex;
+      align-items: center;
+      gap: 24px;
+    }
+
+    .rev-stat { text-align: right; }
+    .rev-stat-val { font-family: 'Playfair Display', serif; font-size: 22px; color: #fff; }
+    .rev-stat-label { font-size: 11px; color: rgba(255,255,255,0.5); margin-top: 1px; }
+
+    .rev-divider { width: 1px; height: 40px; background: rgba(255,255,255,0.2); }
+
+    /* ── ANIMATIONS ─────────────────────────────────────── */
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(10px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    /* ── RESPONSIVE ─────────────────────────────────────── */
+    @media (max-width: 800px) {
+      .kpi-grid { grid-template-columns: repeat(2, 1fr); }
+      .table-head, .order-row { grid-template-columns: 70px 1fr 80px 80px; }
+      .table-head .col-items,
+      .table-head .col-type,
+      .order-row .cell-items,
+      .order-row .cell-type { display: none; }
+      .rev-right { display: none; }
+    }
+
+    @media (max-width: 500px) {
+      .kpi-grid { grid-template-columns: 1fr 1fr; }
+      .topbar { padding: 0 16px; }
+      .page { padding: 20px 14px 48px; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- TOPBAR -->
+  <div class="topbar">
+    <div class="topbar-left">
+      <a href="/admin" class="back-btn">
+        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M10 3L5 8l5 5"/>
+        </svg>
+        Dashboard
+      </a>
+      <div class="topbar-divider"></div>
+      <span class="topbar-title">All Orders</span>
+    </div>
+    <div class="topbar-right">
+      <span class="topbar-clock" id="topbar-clock">--:--:--</span>
+      <button class="export-btn" onclick="exportCSV()">
+        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M8 2v8M5 7l3 3 3-3M3 13h10"/>
+        </svg>
+        Export CSV
+      </button>
+    </div>
+  </div>
+
+  <div class="page">
+
+    <!-- HEADING -->
+    <div class="page-heading">
+      <h1>Order <em>Analytics</em></h1>
+      <p>All incoming orders — filter, search, and analyse revenue</p>
+    </div>
+
+    <!-- REVENUE BANNER -->
+    <div class="revenue-banner" id="rev-banner">
+      <div class="rev-left">
+        <span class="rev-label" id="rev-period-label">Total Revenue</span>
+        <span class="rev-value" id="rev-total">₹0</span>
+        <span class="rev-sub" id="rev-sub">across all orders</span>
+      </div>
+      <div class="rev-right">
+        <div class="rev-stat">
+          <div class="rev-stat-val" id="rev-avg">₹0</div>
+          <div class="rev-stat-label">Avg. Order</div>
+        </div>
+        <div class="rev-divider"></div>
+        <div class="rev-stat">
+          <div class="rev-stat-val" id="rev-dine-pct">0%</div>
+          <div class="rev-stat-label">Dine In</div>
+        </div>
+        <div class="rev-divider"></div>
+        <div class="rev-stat">
+          <div class="rev-stat-val" id="rev-take-pct">0%</div>
+          <div class="rev-stat-label">Take Away</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- KPI GRID -->
+    <div class="kpi-grid">
+      <div class="kpi-card accent">
+        <div class="kpi-label">Total Orders</div>
+        <div class="kpi-value" id="kpi-total">0</div>
+        <div class="kpi-sub" id="kpi-total-sub">in selected period</div>
+      </div>
+      <div class="kpi-card green">
+        <div class="kpi-label">Dine In</div>
+        <div class="kpi-value" id="kpi-dine">0</div>
+        <div class="kpi-sub">table orders</div>
+      </div>
+      <div class="kpi-card amber">
+        <div class="kpi-label">Take Away</div>
+        <div class="kpi-value" id="kpi-take">0</div>
+        <div class="kpi-sub">pickup orders</div>
+      </div>
+      <div class="kpi-card coral">
+        <div class="kpi-label">Items Sold</div>
+        <div class="kpi-value" id="kpi-items">0</div>
+        <div class="kpi-sub">total quantity</div>
+      </div>
+    </div>
+
+    <!-- TOOLBAR -->
+    <div class="toolbar">
+
+      <!-- Search -->
+      <div class="search-wrap">
+        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="6.5" cy="6.5" r="4"/><path d="M11 11l3 3"/>
+        </svg>
+        <input type="text" id="search-input" placeholder="Search by Order ID or Name…" oninput="applyFilters()"/>
+      </div>
+
+      <!-- Time filter -->
+      <div class="filter-group" id="time-filter">
+        <button class="filter-pill" data-period="1h"   onclick="setPeriod(this)">1H</button>
+        <button class="filter-pill" data-period="1d"   onclick="setPeriod(this)">Today</button>
+        <button class="filter-pill" data-period="7d"   onclick="setPeriod(this)">7D</button>
+        <button class="filter-pill" data-period="30d"  onclick="setPeriod(this)">30D</button>
+        <button class="filter-pill" data-period="365d" onclick="setPeriod(this)">1Y</button>
+        <button class="filter-pill active" data-period="all" onclick="setPeriod(this)">All</button>
+      </div>
+
+      <!-- Type filter -->
+      <select class="type-select" id="type-filter" onchange="applyFilters()">
+        <option value="all">All Types</option>
+        <option value="dine">Dine In</option>
+        <option value="takeaway">Take Away</option>
+      </select>
+
+      <!-- Count -->
+      <span class="result-count" id="result-count">— orders</span>
+    </div>
+
+    <!-- ORDERS TABLE -->
+    <div class="orders-wrap">
+      <div class="orders-table">
+
+        <div class="table-head">
+          <div>Order</div>
+          <div>Customer</div>
+          <div class="col-items">Items</div>
+          <div>Total</div>
+          <div>Time</div>
+          <div class="col-type">Type</div>
+        </div>
+
+        <div id="orders-body">
+          <!-- Injected by JS from Jinja data -->
+        </div>
+
+      </div>
+    </div>
+
+  </div><!-- /page -->
+
+  <!-- ── RAW DATA FROM JINJA ─────────────────────────── -->
+  <script>
+    // Jinja injects orders as JSON so all filtering/analytics runs client-side
+    const RAW_ORDERS = [
+      {% for order in orders %}
+      {
+        id:         {{ order["id"] }},
+        name:       {{ order.name | tojson }},
+        items:      {{ order["items"] | tojson }},
+        total:      {{ order["total"] | float }},
+        time:       {{ order["time"] | tojson }},
+        order_type: {{ order["order_type"] | tojson }}
+      }{% if not loop.last %},{% endif %}
+      {% endfor %}
+    ];
+  </script>
+
+  <script>
+    // ── Clock ───────────────────────────────────────────
+    function tick() {
+      document.getElementById('topbar-clock').textContent =
+        new Date().toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false });
+    }
+    tick(); setInterval(tick, 1000);
+
+    // ── Parse order time → Date ─────────────────────────
+    function parseOrderTime(timeStr) {
+      if (!timeStr) return null;
+      // Accepts "HH:MM", "HH:MM:SS", "HH:MM AM/PM", ISO strings
+      const iso = Date.parse(timeStr);
+      if (!isNaN(iso)) return new Date(iso);
+
+      const m = timeStr.match(/(\d{1,2}):(\d{2})(?::(\d{2}))?\s*(AM|PM)?/i);
+      if (!m) return null;
+      let h = parseInt(m[1]), min = parseInt(m[2]);
+      const ap = m[4];
+      if (ap) {
+        if (ap.toUpperCase() === 'PM' && h !== 12) h += 12;
+        if (ap.toUpperCase() === 'AM' && h === 12) h = 0;
+      }
+      const d = new Date();
+      d.setHours(h, min, 0, 0);
+      return d;
+    }
+
+    // ── State ───────────────────────────────────────────
+    let currentPeriod = 'all';
+
+    function setPeriod(btn) {
+      currentPeriod = btn.dataset.period;
+      document.querySelectorAll('.filter-pill').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      applyFilters();
+    }
+
+    function periodCutoff(period) {
+      const now = Date.now();
+      if (period === '1h')   return now - 3600_000;
+      if (period === '1d')   { const d = new Date(); d.setHours(0,0,0,0); return d.getTime(); }
+      if (period === '7d')   return now - 7  * 86400_000;
+      if (period === '30d')  return now - 30 * 86400_000;
+      if (period === '365d') return now - 365* 86400_000;
+      return 0; // all
+    }
+
+    function applyFilters() {
+      const query    = document.getElementById('search-input').value.trim().toLowerCase();
+      const typeVal  = document.getElementById('type-filter').value;
+      const cutoff   = periodCutoff(currentPeriod);
+
+      const filtered = RAW_ORDERS.filter(o => {
+        // Time filter
+        if (cutoff > 0) {
+          const t = parseOrderTime(o.time);
+          if (!t || t.getTime() < cutoff) return false;
+        }
+        // Type filter
+        if (typeVal !== 'all') {
+          const isDine = o.order_type && o.order_type.toLowerCase().includes('dine');
+          if (typeVal === 'dine'    && !isDine) return false;
+          if (typeVal === 'takeaway' && isDine) return false;
+        }
+        // Search
+        if (query) {
+          const matchId   = String(o.id).toLowerCase().includes(query);
+          const matchName = o.name.toLowerCase().includes(query);
+          if (!matchId && !matchName) return false;
+        }
+        return true;
+      });
+
+      renderOrders(filtered);
+      renderAnalytics(filtered);
+    }
+
+    // ── Render rows ─────────────────────────────────────
+    function renderOrders(orders) {
+      const body = document.getElementById('orders-body');
+      document.getElementById('result-count').textContent = orders.length + ' order' + (orders.length !== 1 ? 's' : '');
+
+      if (orders.length === 0) {
+        body.innerHTML = `<div class="empty-state"><div class="big">🔍</div><p>No orders match your filters.</p></div>`;
+        return;
+      }
+
+      body.innerHTML = orders.map(o => {
+        const isDine = o.order_type && o.order_type.toLowerCase().includes('dine');
+        const typeLabel = isDine ? 'Dine In' : 'Take Away';
+        const typeClass = isDine ? 'dine' : 'takeaway';
+        const itemSummary = o.items.map(i => `${i.name} ×${i.quantity}`).join(', ');
+        const detailItems = o.items.map(i =>
+          `<div class="detail-item"><span>${i.name}</span><span class="detail-item-qty">×${i.quantity}</span></div>`
+        ).join('');
+
+        return `
+          <div class="order-row" onclick="toggleDetail('detail-${o.id}')">
+            <div class="cell-id">#${o.id}</div>
+            <div class="cell-name">${escHtml(o.name)}</div>
+            <div class="cell-items col-items">${escHtml(itemSummary)}</div>
+            <div class="cell-total">₹${o.total.toLocaleString('en-IN')}</div>
+            <div class="cell-time">${escHtml(o.time)}</div>
+            <div class="cell-type col-type"><span class="type-badge ${typeClass}">${typeLabel}</span></div>
+          </div>
+          <div class="order-detail" id="detail-${o.id}">
+            <div class="detail-inner">
+              <div class="detail-section">
+                <div class="detail-label">Items Ordered</div>
+                <div class="detail-items">${detailItems}</div>
+              </div>
+              <div class="detail-section">
+                <div class="detail-label">Order Info</div>
+                <div class="detail-items">
+                  <div class="detail-item"><span>Order ID</span><span class="detail-item-qty">#${o.id}</span></div>
+                  <div class="detail-item"><span>Customer</span><span style="font-size:12px;color:var(--text-2)">${escHtml(o.name)}</span></div>
+                  <div class="detail-item"><span>Time</span><span style="font-size:12px;color:var(--text-2)">${escHtml(o.time)}</span></div>
+                  <div class="detail-item"><span>Type</span><span class="type-badge ${typeClass}" style="font-size:10px;">${typeLabel}</span></div>
+                </div>
+              </div>
+              <div class="detail-section">
+                <div class="detail-label">Bill</div>
+                <div class="detail-items">
+                  ${o.items.map(i => `<div class="detail-item"><span>${escHtml(i.name)}</span><span style="font-size:12px;color:var(--text-2)">₹—</span></div>`).join('')}
+                  <div class="detail-item" style="margin-top:6px;padding-top:6px;border-top:1px solid var(--border);">
+                    <span style="font-weight:600;">Total</span>
+                    <span style="font-weight:600;font-family:'JetBrains Mono',monospace;font-size:13px;">₹${o.total.toLocaleString('en-IN')}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>`;
+      }).join('');
+    }
+
+    function toggleDetail(id) {
+      const el = document.getElementById(id);
+      if (!el) return;
+      el.classList.toggle('open');
+    }
+
+    // ── Render analytics ─────────────────────────────────
+    function renderAnalytics(orders) {
+      const total    = orders.reduce((s, o) => s + o.total, 0);
+      const avg      = orders.length ? total / orders.length : 0;
+      const dineOrds = orders.filter(o => o.order_type && o.order_type.toLowerCase().includes('dine'));
+      const takeOrds = orders.filter(o => !(o.order_type && o.order_type.toLowerCase().includes('dine')));
+      const dinePct  = orders.length ? Math.round(dineOrds.length / orders.length * 100) : 0;
+      const takePct  = 100 - dinePct;
+      const itemsQty = orders.reduce((s, o) => s + o.items.reduce((ss, i) => ss + (parseInt(i.quantity) || 0), 0), 0);
+
+      const fmt = n => '₹' + Math.round(n).toLocaleString('en-IN');
+
+      document.getElementById('rev-total').textContent   = fmt(total);
+      document.getElementById('rev-avg').textContent     = fmt(avg);
+      document.getElementById('rev-dine-pct').textContent = dinePct + '%';
+      document.getElementById('rev-take-pct').textContent = takePct + '%';
+      document.getElementById('rev-sub').textContent     = `across ${orders.length} order${orders.length !== 1 ? 's' : ''}`;
+
+      const periodNames = { '1h':'Last Hour', '1d':'Today', '7d':'Last 7 Days', '30d':'Last 30 Days', '365d':'Last Year', 'all':'Total Revenue' };
+      document.getElementById('rev-period-label').textContent = periodNames[currentPeriod] || 'Total Revenue';
+
+      document.getElementById('kpi-total').textContent  = orders.length;
+      document.getElementById('kpi-dine').textContent   = dineOrds.length;
+      document.getElementById('kpi-take').textContent   = takeOrds.length;
+      document.getElementById('kpi-items').textContent  = itemsQty;
+    }
+
+    // ── Export CSV ───────────────────────────────────────
+    function exportCSV() {
+      const query   = document.getElementById('search-input').value.trim().toLowerCase();
+      const typeVal = document.getElementById('type-filter').value;
+      const cutoff  = periodCutoff(currentPeriod);
+
+      const rows = RAW_ORDERS.filter(o => {
+        if (cutoff > 0) { const t = parseOrderTime(o.time); if (!t || t.getTime() < cutoff) return false; }
+        if (typeVal !== 'all') {
+          const isDine = o.order_type && o.order_type.toLowerCase().includes('dine');
+          if (typeVal === 'dine' && !isDine) return false;
+          if (typeVal === 'takeaway' && isDine) return false;
+        }
+        if (query) { if (!String(o.id).toLowerCase().includes(query) && !o.name.toLowerCase().includes(query)) return false; }
+        return true;
+      });
+
+      const header = ['Order ID', 'Customer', 'Items', 'Total (₹)', 'Time', 'Type'];
+      const lines  = [header.join(',')];
+      rows.forEach(o => {
+        const items = o.items.map(i => `${i.name}x${i.quantity}`).join('; ');
+        const type  = o.order_type && o.order_type.toLowerCase().includes('dine') ? 'Dine In' : 'Take Away';
+        lines.push([o.id, `"${o.name}"`, `"${items}"`, o.total, `"${o.time}"`, type].join(','));
+      });
+
+      const blob = new Blob([lines.join('\n')], { type: 'text/csv' });
+      const url  = URL.createObjectURL(blob);
+      const a    = document.createElement('a'); a.href = url;
+      a.download = `orders_${currentPeriod}_${Date.now()}.csv`; a.click();
+      URL.revokeObjectURL(url);
+    }
+
+    // ── Escape HTML ──────────────────────────────────────
+    function escHtml(s) {
+      return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+    }
+
+    // ── Init ─────────────────────────────────────────────
+    applyFilters();
+  </script>
+
+</body>
+</html>

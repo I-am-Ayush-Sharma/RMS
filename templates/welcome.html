@@ -402,27 +402,6 @@
       <span id="popup-msg"></span>
     </div>
 
-
-
-
-
-    <button
-      id="enableSound"
-      style="
-        position: fixed;
-        bottom: 20px;
-        right: 20px;
-        padding: 10px 15px;
-        background: #16a34a;
-        color: white;
-        border: none;
-        border-radius: 6px;
-        z-index: 2000;
-      "
-    >
-      🔊 Enable Sound
-    </button>
-
     <script>
       /* ── PARTICLE / EMBER CANVAS ── */
       const canvas = document.getElementById("bg-canvas");
@@ -498,42 +477,33 @@
       tick();
 
       /* ── RELOAD (kept from original) ── */
-      const enableSoundBtn = document.getElementById("enableSound");
-      let audioEnabled = false;
-      let pendingSpeech = null;
+      let audioEnabled = !!(
+        window.speechSynthesis && window.SpeechSynthesisUtterance
+      );
       let lastNotified = localStorage.getItem("lastNotifiedOrder");
 
       function speak(msg) {
-        if (!window.speechSynthesis || !window.SpeechSynthesisUtterance) return;
+        let voices = speechSynthesis.getVoices();
 
-        const utterance = new SpeechSynthesisUtterance(msg);
-        utterance.lang = "en-IN";
-        utterance.rate = 1;
-        utterance.pitch = 1;
-        window.speechSynthesis.speak(utterance);
-      }
+        // 🔥 best female voices try
+        let selectedVoice =
+          voices.find((v) => v.name.includes("Female")) ||
+          voices.find((v) => v.name.includes("Heera")) ||
+          voices.find((v) => v.name.includes("Priya")) ||
+          voices[0];
 
-      if (enableSoundBtn) {
-        if (!window.speechSynthesis || !window.SpeechSynthesisUtterance) {
-          enableSoundBtn.style.display = "none";
-        } else {
-          enableSoundBtn.addEventListener("click", () => {
-            audioEnabled = true;
-            enableSoundBtn.style.display = "none";
-            if (pendingSpeech) {
-              speak(pendingSpeech);
-              pendingSpeech = null;
-            }
-            speak("Voice announcements enabled.");
-          });
-        }
+        let speech = new SpeechSynthesisUtterance(msg);
+
+        speech.voice = selectedVoice;
+        speech.rate = 0.95; // thoda slow = natural
+        speech.pitch = 1;
+
+        speechSynthesis.speak(speech);
       }
 
       function notifySpeech(msg) {
         if (audioEnabled) {
           speak(msg);
-        } else {
-          pendingSpeech = msg;
         }
       }
 

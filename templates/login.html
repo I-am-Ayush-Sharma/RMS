@@ -1,189 +1,244 @@
-<!-- <h2>Login</h2>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<form method="POST">
-    Username: <input type="text" name="username"><br><br>
-    Password: <input type="password" name="password"><br><br>
-    <button>Login</button>
-</form> -->
+<title>Login</title>
+
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
 
 <style>
-  @import url("https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=DM+Sans:wght@300;400;500&display=swap");
-
-  :root {
-  /* Backgrounds */
-  --color-background-primary: #FFFFFF;
-  --color-background-secondary: #F7F7FB;
-
-  /* Text */
-  --color-text-primary: #2D2D34;
-  --color-text-secondary: #6F6F7B;
-
-  /* Borders */
-  --color-border-secondary: #E4E4EA;
-  --color-border-tertiary: #EFEFF4;
-
-  /* Radius */
-  --border-radius-lg: 16px;
-  --border-radius-md: 10px;
+:root{
+  --primary:#6C63FF;
+  --bg:#F3F4F8;
+  --text:#2D2D34;
+  --subtext:#6F6F7B;
+  --border:#E4E4EA;
 }
 
-  body {
-    background: #F3F4F8;
-  }
+*{
+  margin:0;
+  padding:0;
+  box-sizing:border-box;
+  font-family:"DM Sans", sans-serif;
+}
 
-  .login-wrap {
-    min-height: 420px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 2.5rem 1rem;
-    font-family: "DM Sans", sans-serif;
-  }
+body{
+  overflow:hidden;
+  background:#0f172a;
+}
 
-  .login-card {
-    background: var(--color-background-primary);
-    border: 0.5px solid var(--color-border-tertiary);
-    border-radius: var(--border-radius-lg);
-    padding: 2.5rem 2rem 2rem;
-    width: 100%;
-    max-width: 360px;
-  }
+/* PARTICLE CANVAS */
+#particles{
+  position:fixed;
+  width:100%;
+  height:100%;
+  top:0;
+  left:0;
+  z-index:0;
+}
 
-  .login-card h2 {
-    font-family: "DM Serif Display", serif;
-    font-size: 26px;
-    font-weight: 400;
-    color: var(--color-text-primary);
-    margin: 0 0 0.25rem;
-    letter-spacing: -0.3px;
-  }
+/* WRAPPER */
+.login-wrap{
+  position:relative;
+  z-index:1;
+  min-height:100vh;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  padding:20px;
+}
 
-  .login-subtitle {
-    font-size: 13px;
-    color: var(--color-text-secondary);
-    margin: 0 0 2rem;
-  }
+/* CARD */
+.login-card{
+  width:100%;
+  max-width:380px;
+  background:rgba(255,255,255,0.08);
+  backdrop-filter:blur(18px);
+  border:1px solid rgba(255,255,255,0.2);
+  border-radius:18px;
+  padding:30px 25px;
+  box-shadow:0 20px 50px rgba(0,0,0,0.3);
+  color:white;
+  animation:fadeIn 0.6s ease;
+}
 
-  .field {
-    margin-bottom: 1.1rem;
-  }
+@keyframes fadeIn{
+  from{opacity:0; transform:translateY(20px);}
+  to{opacity:1; transform:translateY(0);}
+}
 
-  .field label {
-    display: block;
-    font-size: 12px;
-    font-weight: 500;
-    color: var(--color-text-secondary);
-    margin-bottom: 6px;
-    letter-spacing: 0.06em;
-    text-transform: uppercase;
-  }
+.login-card h2{
+  font-family:"DM Serif Display", serif;
+  font-size:28px;
+}
 
-  .field input {
-    width: 100%;
-    box-sizing: border-box;
-    padding: 10px 14px;
-    font-size: 14px;
-    font-family: "DM Sans", sans-serif;
-    background: var(--color-background-secondary);
-    border: 0.5px solid var(--color-border-secondary);
-    border-radius: var(--border-radius-md);
-    color: var(--color-text-primary);
-    transition:
-      border-color 0.15s,
-      box-shadow 0.15s;
-    outline: none;
-  }
+.login-subtitle{
+  font-size:13px;
+  color:#ccc;
+  margin-bottom:20px;
+}
 
-  .field input:focus {
-    border-color: #7f77dd;
-    box-shadow: 0 0 0 3px rgba(127, 119, 221, 0.12);
-  }
+/* ROLE TOGGLE */
+.role-toggle{
+  display:flex;
+  background:rgba(255,255,255,0.1);
+  border-radius:10px;
+  padding:4px;
+  margin-bottom:20px;
+}
 
-  .login-btn {
-    margin-top: 1.5rem;
-    width: 100%;
-    padding: 11px 0;
-    font-family: "DM Sans", sans-serif;
-    font-size: 14px;
-    font-weight: 500;
-    letter-spacing: 0.02em;
-    background: #534ab7;
-    color: #eeedfe;
-    border: none;
-    border-radius: var(--border-radius-md);
-    cursor: pointer;
-    transition:
-      background 0.15s,
-      transform 0.1s;
-  }
+.role-btn{
+  flex:1;
+  text-align:center;
+  padding:8px;
+  cursor:pointer;
+  border-radius:8px;
+  transition:0.2s;
+}
 
-  .login-btn:hover {
-    background: #3c3489;
-  }
-  .login-btn:active {
-    transform: scale(0.98);
-    background: #26215c;
-  }
+.role-btn.active{
+  background:var(--primary);
+  color:white;
+}
 
-  .divider {
-    height: 0.5px;
-    background: var(--color-border-tertiary);
-    margin: 1.75rem 0 1.25rem;
-  }
+/* INPUT */
+.field{
+  margin-bottom:15px;
+}
 
-  .login-footer {
-    font-size: 12px;
-    color: var(--color-text-secondary);
-    text-align: center;
-  }
+.field input{
+  width:100%;
+  padding:11px;
+  border-radius:10px;
+  border:none;
+  background:rgba(255,255,255,0.15);
+  color:white;
+}
 
-  .accent-dot {
-    display: inline-block;
-    width: 7px;
-    height: 7px;
-    border-radius: 50%;
-    background: #7f77dd;
-    margin-right: 6px;
-    vertical-align: middle;
-    position: relative;
-    top: -1px;
-  }
+.field input::placeholder{
+  color:#ccc;
+}
+
+.field input:focus{
+  outline:none;
+  box-shadow:0 0 0 2px rgba(108,99,255,0.5);
+}
+
+/* BUTTON */
+.login-btn{
+  width:100%;
+  padding:12px;
+  background:linear-gradient(135deg,#6C63FF,#574fd6);
+  border:none;
+  border-radius:10px;
+  color:white;
+  cursor:pointer;
+  margin-top:10px;
+}
+
+.login-btn:hover{
+  transform:translateY(-2px);
+  box-shadow:0 10px 20px rgba(108,99,255,0.4);
+}
+
+/* FOOTER */
+.login-footer{
+  text-align:center;
+  font-size:12px;
+  margin-top:15px;
+  color:#aaa;
+}
 </style>
+</head>
+
+<body>
+
+<canvas id="particles"></canvas>
 
 <div class="login-wrap">
   <div class="login-card">
+
     <h2>Login</h2>
-    <p class="login-subtitle">
-      <span class="accent-dot"></span>Welcome back — sign in to continue
-    </p>
+    <p class="login-subtitle">Sign in as Admin or Chef</p>
+
+    <div class="role-toggle">
+      <div class="role-btn active" onclick="setRole('admin')">Admin</div>
+      <div class="role-btn" onclick="setRole('chef')">Chef</div>
+    </div>
 
     <form method="POST">
+      <input type="hidden" name="role" id="role" value="admin">
+
       <div class="field">
-        <label for="username">Username</label>
-        <input
-          type="text"
-          name="username"
-          id="username"
-          placeholder="your username"
-          autocomplete="username"
-        />
+        <input type="text" name="username" placeholder="Username" required>
       </div>
+
       <div class="field">
-        <label for="password">Password</label>
-        <input
-          type="password"
-          name="password"
-          id="password"
-          placeholder="••••••••"
-          autocomplete="current-password"
-        />
+        <input type="password" name="password" placeholder="Password" required>
       </div>
-      <button class="login-btn" type="submit">Login</button>
+
+      <button class="login-btn">Login</button>
     </form>
 
-    <div class="divider"></div>
-    <p class="login-footer">
-      Secure sign-in &nbsp;·&nbsp; Your session is protected
-    </p>
+    <div class="login-footer">Secure login · Role based</div>
+
   </div>
 </div>
+
+<script>
+/* ROLE SWITCH */
+function setRole(role){
+  document.getElementById("role").value = role;
+
+  document.querySelectorAll(".role-btn").forEach(btn=>{
+    btn.classList.remove("active");
+  });
+
+  event.target.classList.add("active");
+}
+
+/* PARTICLES */
+const canvas = document.getElementById("particles");
+const ctx = canvas.getContext("2d");
+
+canvas.width = window.innerWidth;
+canvas.height = window.innerHeight;
+
+let particles = [];
+
+for(let i=0;i<80;i++){
+  particles.push({
+    x:Math.random()*canvas.width,
+    y:Math.random()*canvas.height,
+    r:Math.random()*2,
+    dx:(Math.random()-0.5)*0.5,
+    dy:(Math.random()-0.5)*0.5
+  });
+}
+
+function animate(){
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+
+  particles.forEach(p=>{
+    p.x+=p.dx;
+    p.y+=p.dy;
+
+    if(p.x<0 || p.x>canvas.width) p.dx*=-1;
+    if(p.y<0 || p.y>canvas.height) p.dy*=-1;
+
+    ctx.beginPath();
+    ctx.arc(p.x,p.y,p.r,0,Math.PI*2);
+    ctx.fillStyle="rgba(255,255,255,0.6)";
+    ctx.fill();
+  });
+
+  requestAnimationFrame(animate);
+}
+
+animate();
+</script>
+
+</body>
+</html>
